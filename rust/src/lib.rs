@@ -7,8 +7,8 @@ mod macros;
 //  Import NuttX HAL
 mod nuttx_hal;
 
-//  Import Module sx1262
-mod sx1262;
+//  Import Test Module
+mod test;
 
 //  Import Libraries
 use core::{            //  Rust Core Library
@@ -30,146 +30,8 @@ extern "C" fn rust_main() {  //  Declare `extern "C"` because it will be called 
     //  Print a message to the serial console
     println!("Hello from Rust!");    
 
-    //  Print a message the unsafe way
-    test_puts();
-
-    //  Test the SPI Port by reading SX1262 Register 8
-    test_spi();
-
-    //  Test the NuttX Embedded HAL by reading SX1262 Register 8
-    test_hal();
-
-    //  Test the SX1262 Driver by reading a register and sending a LoRa message
-    sx1262::test_sx1262();
-}
-
-/// Print a message the unsafe way
-fn test_puts() {
-    extern "C" {  //  Import C Function
-        /// Print a message to the serial console (from C stdio library)
-        fn puts(s: *const u8) -> i32;
-    }
-    unsafe {  //  Mark as unsafe because we are calling C
-        //  Print a message to the serial console
-        puts(
-            b"Hello World!\0"  //  Byte String terminated with null
-                .as_ptr()      //  Convert to pointer
-        );
-    }
-}
-
-/// Test the SPI Port by reading SX1262 Register 8
-fn test_spi() {
-    println!("test_spi");
-
-    //  Open GPIO Input for SX1262 Busy Pin
-    let busy = unsafe { 
-        open(b"/dev/gpio0\0".as_ptr(), O_RDWR) 
-    };
-    assert!(busy > 0);
-
-    //  Open GPIO Output for SX1262 Chip Select
-    let cs = unsafe { 
-        open(b"/dev/gpio1\0".as_ptr(), O_RDWR) 
-    };
-    assert!(cs > 0);  
-
-    //  Open GPIO Interrupt for SX1262 DIO1 Pin
-    let dio1 = unsafe { 
-        open(b"/dev/gpio2\0".as_ptr(), O_RDWR) 
-    };
-    assert!(dio1 > 0);
-
-    //  Open SPI Bus for SX1262
-    let spi = unsafe { 
-        open(b"/dev/spitest0\0".as_ptr(), O_RDWR) 
-    };
-    assert!(spi >= 0);
-
-    //  Read SX1262 Register twice
-    for _i in 0..2 {
-
-        //  Set SX1262 Chip Select to Low
-        let ret = unsafe { 
-            ioctl(cs, GPIOC_WRITE, 0) 
-        };
-        assert!(ret >= 0);
-
-        //  Transmit command to SX1262: Read Register 8
-        const READ_REG: &[u8] = &[ 0x1d, 0x00, 0x08, 0x00, 0x00 ];
-        let bytes_written = unsafe { 
-            write(spi, READ_REG.as_ptr(), READ_REG.len() as u32) 
-        };
-        assert!(bytes_written == READ_REG.len() as i32);
-
-        //  Read response from SX1262
-        let mut rx_data: [ u8; 16 ] = [ 0; 16 ];
-        let bytes_read = unsafe { 
-            read(spi, rx_data.as_mut_ptr(), rx_data.len() as u32) 
-        };
-        assert!(bytes_read == READ_REG.len() as i32);
-
-        //  Set SX1262 Chip Select to High
-        let ret = unsafe { 
-            ioctl(cs, GPIOC_WRITE, 1) 
-        };
-        assert!(ret >= 0);
-
-        //  Show the received register value
-        println!("test_spi: received");
-        for i in 0..bytes_read {
-            println!("  {:02x}", rx_data[i as usize])
-        }
-        println!("test_spi: SX1262 Register 8 is 0x{:02x}", rx_data[4]);
-
-        //  Sleep 5 seconds
-        unsafe { sleep(5); }
-    }
-
-    //  Close the GPIO and SPI ports
-    unsafe {
-        close(busy);
-        close(cs);
-        close(dio1);
-        close(spi);    
-    }
-}
-
-/// Test the NuttX Embedded HAL by reading SX1262 Register 8
-fn test_hal() {
-    println!("test_hal");
-
-    //  Open GPIO Output for SX1262 Chip Select
-    let mut cs = nuttx_hal::OutputPin::new("/dev/gpio1");
-
-    //  Open SPI Bus for SX1262
-    let mut spi = nuttx_hal::Spi::new("/dev/spitest0");
-
-    //  Get a Delay Interface
-    let mut delay = nuttx_hal::Delay::new();
-
-    //  Set SX1262 Chip Select to Low
-    cs.set_low()
-        .expect("cs failed");
-
-    //  Transfer command to SX1262: Read Register 8
-    let mut data: [ u8; 5 ] = [ 0x1d, 0x00, 0x08, 0x00, 0x00 ];
-    spi.transfer(&mut data)
-        .expect("spi failed");
-
-    //  Show the received register value
-    println!("test_hal: received");
-    for i in 0..data.len() {
-        println!("  {:02x}", data[i as usize]);
-    }
-    println!("test_hal: SX1262 Register 8 is 0x{:02x}", data[4]);
-    
-    //  Set SX1262 Chip Select to High
-    cs.set_high()
-        .expect("cs failed");
-
-    //  Wait 5 seconds
-    delay.delay_ms(5000);
+    //  Test the I2C Port by reading an I2C Register
+    test::test_i2c();
 }
 
 /// Print a message to the serial console.
