@@ -107,18 +107,18 @@ fn panic(info: &PanicInfo) -> ! {  //  `!` means that panic handler will never r
 /// Limit Strings to 64 chars, similar to `char[64]` in C
 pub type String = heapless::String::<64>;
 
-extern "C" {  //  Import POSIX Functions. TODO: Import with bindgen
+extern "C" {  //  Import POSIX Functions. TODO: Import with bindgen from https://github.com/lupyuen/incubator-nuttx/blob/rusti2c/include/unistd.h
     pub fn open(path: *const u8, oflag: i32, ...) -> i32;
-    pub fn read(fd: i32, buf: *mut u8, count: u32) -> i32;
-    pub fn write(fd: i32, buf: *const u8, count: u32) -> i32;
+    pub fn read(fd: i32, buf: *mut u8, count: size_t)    -> ssize_t;
+    pub fn write(fd: i32, buf: *const u8, count: size_t) -> ssize_t;
     pub fn close(fd: i32) -> i32;
     pub fn ioctl(fd: i32, request: i32, ...) -> i32;  //  On NuttX: request is i32, not u64 like Linux
-    pub fn sleep(secs: u32) -> u32;
+    pub fn sleep(secs: u32)  -> u32;
     pub fn usleep(usec: u32) -> u32;
     pub fn exit(status: u32) -> !;
 }
 
-/// TODO: Import with bindgen from https://github.com/lupyuen/incubator-nuttx/blob/rust/include/nuttx/ioexpander/gpio.h
+/// GPIO ioctl Commands. TODO: Import with bindgen from https://github.com/lupyuen/incubator-nuttx/blob/rust/include/nuttx/ioexpander/gpio.h
 pub const GPIOC_WRITE:      i32 = _GPIOBASE | 1;  //  _GPIOC(1)
 pub const GPIOC_READ:       i32 = _GPIOBASE | 2;  //  _GPIOC(2)
 pub const GPIOC_PINTYPE:    i32 = _GPIOBASE | 3;  //  _GPIOC(3)
@@ -126,10 +126,16 @@ pub const GPIOC_REGISTER:   i32 = _GPIOBASE | 4;  //  _GPIOC(4)
 pub const GPIOC_UNREGISTER: i32 = _GPIOBASE | 5;  //  _GPIOC(5)
 pub const GPIOC_SETPINTYPE: i32 = _GPIOBASE | 6;  //  _GPIOC(6)
 
-/// TODO: Import with bindgen from https://github.com/lupyuen/incubator-nuttx/blob/rust/include/fcntl.h
+/// GPIO Constants. TODO: Import with bindgen from https://github.com/lupyuen/incubator-nuttx/blob/rust/include/fcntl.h
 pub const _GPIOBASE: i32 = 0x2300; /* GPIO driver commands */
 //  #define _GPIOC(nr)       _IOC(_GPIOBASE,nr)
 //  #define _IOC(type,nr)    ((type)|(nr))
+
+/// I2C Constants. TODO: Import with bindgen from https://github.com/lupyuen/incubator-nuttx/blob/rusti2c/include/nuttx/i2c/i2c_master.h#L93-L96
+pub const I2C_M_READ:    u16 = 0x0001; /* Read data, from slave to master */
+pub const I2C_M_TEN:     u16 = 0x0002; /* Ten bit address */
+pub const I2C_M_NOSTOP:  u16 = 0x0040; /* Message should not end with a STOP */
+pub const I2C_M_NOSTART: u16 = 0x0080; /* Message should not begin with a START */
 
 /// TODO: Import with bindgen from https://github.com/lupyuen/incubator-nuttx/blob/rust/include/fcntl.h
 pub const O_RDONLY: i32 = 1 << 0;        /* Open for read access (only) */
@@ -137,3 +143,11 @@ pub const O_RDOK:   i32 = O_RDONLY;      /* Read access is permitted (non-standa
 pub const O_WRONLY: i32 = 1 << 1;        /* Open for write access (only) */
 pub const O_WROK:   i32 = O_WRONLY;      /* Write access is permitted (non-standard) */
 pub const O_RDWR:   i32 = O_RDOK|O_WROK; /* Open for both read & write access */
+
+/// size_t for NuttX 32-bit. TODO: Support other architectures
+#[allow(non_camel_case_types)]
+pub type size_t = u32;
+
+/// ssize_t for NuttX 32-bit. TODO: Support other architectures
+#[allow(non_camel_case_types)]
+pub type ssize_t = i32;

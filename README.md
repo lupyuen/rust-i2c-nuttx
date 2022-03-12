@@ -2,6 +2,8 @@
 
 (Tested on Pine64 PineCone BL602)
 
+Will Rust talk I2C on Apache NuttX RTOS for BL602? Let's find out!
+
 This repo depends on...
 
 -   [lupyuen/rust-nuttx](https://github.com/lupyuen/rust-nuttx)
@@ -52,7 +54,7 @@ rust_i2c
 
 # From C to Rust
 
-TODO
+This is how we read an I2C Register in C...
 
 https://github.com/lupyuen/bme280-nuttx/blob/main/driver.c#L155-L183
 

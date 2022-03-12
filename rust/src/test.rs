@@ -2,83 +2,122 @@
 
 //  Import Libraries
 use crate::{      //  Local Library
-    nuttx_hal,    //  NuttX Embedded HAL
-    close, ioctl, open, read, sleep, write, O_RDWR, //  NuttX Input / Output
+    close, ioctl, open, sleep,         //  NuttX Functions
+    size_t, ssize_t,                   //  NuttX Types
+    I2C_M_NOSTOP, I2C_M_READ, O_RDWR,  //  NuttX Constants
 };
+
+/// I2C Address of BME280
+const BME280_ADDR: u16 = 0x77;
+
+/// I2C Frequency in Hz
+const BME280_FREQ: u32 = 400000;
+
+/// I2C Register that contains the Device ID
+const BME280_REG_ID: u8 = 0xD0;
+
+/// Device ID of BME280
+const BME280_CHIP_ID: u8 = 0x60;
 
 /// Test the I2C Port by reading an I2C Register
 pub fn test_i2c() {
     println!("test_i2c");
 
-    //  Open GPIO Input for SX1262 Busy Pin
-    let busy = unsafe { 
-        open(b"/dev/gpio0\0".as_ptr(), O_RDWR) 
+    //  Open I2C Port
+    let i2c = unsafe { 
+        open(b"/dev/i2c0\0".as_ptr(), O_RDWR) 
     };
-    assert!(busy > 0);
+    assert!(i2c > 0);
 
-    //  Open GPIO Output for SX1262 Chip Select
-    let cs = unsafe { 
-        open(b"/dev/gpio1\0".as_ptr(), O_RDWR) 
+    //  Read one I2C Register, starting at Device ID
+    let mut start = [BME280_REG_ID ; 1];
+    let mut buf   = [0u8 ; 1];
+    let size      = 1;
+
+    //  Compose I2C Request
+    let msg: [i2c_msg_s; 2] = [
+        //  First I2C Message: Send Register ID
+        i2c_msg_s {
+            frequency: BME280_FREQ,   //  I2C Frequency
+            addr:      BME280_ADDR,   //  I2C Address
+            buffer:    start.as_mut_ptr(),  //  Buffer to be sent
+            length:    1,             //  Length of the buffer in bytes            
+            //  For BL602: Register ID must be passed as I2C Sub Address
+            flags:     I2C_M_NOSTOP,  //  I2C Flags: Send I2C Sub Address
+            //  TODO: Otherwise pass Register ID as I2C Data
+            //  flags: 0,
+        },
+        //  Second I2C Message: Receive Register Value
+        i2c_msg_s {
+            frequency: BME280_FREQ,  //  I2C Frequency
+            addr:      BME280_ADDR,  //  I2C Address
+            buffer:    buf.as_mut_ptr(),  //  Buffer to be received
+            length:    size,         //  Length of the buffer in bytes
+            flags:     I2C_M_READ,   //  I2C Flags: Read from I2C
+        },
+    ];
+
+    /*
+    struct i2c_transfer_s xfer;
+    /* Set up the IOCTL argument */
+    xfer.msgv = msgv;
+    xfer.msgc = msgc;
+    /* Perform the IOCTL */
+    ioctl(fd, I2CIOC_TRANSFER, (unsigned long)((uintptr_t)&xfer));
+    */
+
+    /*
+    //  Execute I2C Request
+    let ret = unsafe { 
+        ioctl(i2c, ???, ???) 
     };
-    assert!(cs > 0);  
+    assert!(ret >= 0);
+    */
 
-    //  Open GPIO Interrupt for SX1262 DIO1 Pin
-    let dio1 = unsafe { 
-        open(b"/dev/gpio2\0".as_ptr(), O_RDWR) 
-    };
-    assert!(dio1 > 0);
+    //  Show the received Register Value
+    println!(
+        "test_i2c: Register 0x{:02x} is 0x{:02x}",
+        BME280_REG_ID,  //  Register ID (0xD0)
+        buf[0]          //  Register Value (0x60)
+    );
 
-    //  Open SPI Bus for SX1262
-    let spi = unsafe { 
-        open(b"/dev/spitest0\0".as_ptr(), O_RDWR) 
-    };
-    assert!(spi >= 0);
+    //  Register Value must be BME280 Device ID (0x60)
+    assert!(buf[0] == BME280_CHIP_ID);
+     
+    //  Sleep 5 seconds
+    unsafe { sleep(5); }
 
-    //  Read SX1262 Register twice
-    for _i in 0..2 {
-
-        //  Set SX1262 Chip Select to Low
-        let ret = unsafe { 
-            0  //  ioctl(cs, GPIOC_WRITE, 0) 
-        };
-        assert!(ret >= 0);
-
-        //  Transmit command to SX1262: Read Register 8
-        const READ_REG: &[u8] = &[ 0x1d, 0x00, 0x08, 0x00, 0x00 ];
-        let bytes_written = unsafe { 
-            write(spi, READ_REG.as_ptr(), READ_REG.len() as u32) 
-        };
-        assert!(bytes_written == READ_REG.len() as i32);
-
-        //  Read response from SX1262
-        let mut rx_data: [ u8; 16 ] = [ 0; 16 ];
-        let bytes_read = unsafe { 
-            read(spi, rx_data.as_mut_ptr(), rx_data.len() as u32) 
-        };
-        assert!(bytes_read == READ_REG.len() as i32);
-
-        //  Set SX1262 Chip Select to High
-        let ret = unsafe { 
-            0  //  ioctl(cs, GPIOC_WRITE, 1) 
-        };
-        assert!(ret >= 0);
-
-        //  Show the received register value
-        println!("test_spi: received");
-        for i in 0..bytes_read {
-            println!("  {:02x}", rx_data[i as usize])
-        }
-        println!("test_spi: SX1262 Register 8 is 0x{:02x}", rx_data[4]);
-
-        //  Sleep 5 seconds
-        unsafe { sleep(5); }
-    }
-
-    //  Close the GPIO and SPI ports
+    //  Close the I2C Port
     unsafe {
-        close(busy);
-        close(cs);
-        close(dio1);
-        close(spi);    
+        close(i2c);    
     }
+}
+
+/// I2C transaction segment beginning with a START. A number of these can
+/// be transferred together to form an arbitrary sequence of write/read
+/// transfer to an I2C device.
+/// TODO: Import with bindgen from https://github.com/lupyuen/incubator-nuttx/blob/rusti2c/include/nuttx/i2c/i2c_master.h#L208-L215
+#[repr(C)]
+pub struct i2c_msg_s {
+    /// I2C Frequency
+    pub frequency: u32,
+    /// I2C Address
+    pub addr: u16,
+    /// I2C Flags (I2C_M_*)
+    pub flags: u16,
+    /// Buffer to be transferred
+    pub buffer: *mut u8,
+    /// Length of the buffer in bytes
+    pub length: ssize_t,
+}
+
+/// This structure is used to communicate with the I2C character driver in
+/// order to perform IOCTL transfers.
+/// TODO: Import with bindgen from https://github.com/lupyuen/incubator-nuttx/blob/rusti2c/include/nuttx/i2c/i2c_master.h#L231-L235
+#[repr(C)]
+pub struct i2c_transfer_s {
+    /// Array of I2C messages for the transfer
+    pub msgv: *const i2c_msg_s,
+    /// Number of messages in the array
+    pub msgc: size_t,
 }
