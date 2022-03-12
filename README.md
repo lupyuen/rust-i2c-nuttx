@@ -56,8 +56,6 @@ rust_i2c
 
 This is how we read an I2C Register in C...
 
-https://github.com/lupyuen/bme280-nuttx/blob/main/driver.c#L155-L183
-
 ```c
 static int bme280_reg_read(const struct device *priv,
     uint8_t start, uint8_t *buf, int size)
@@ -90,9 +88,9 @@ static int bme280_reg_read(const struct device *priv,
   ret = I2C_TRANSFER(priv->i2c, msg, 2);
 ```
 
-How do we call __I2C_TRANSFER__ from a NuttX App? Thanks to the I2C Demo App we have the answer...
+[(Source)](https://github.com/lupyuen/bme280-nuttx/blob/main/driver.c#L155-L183)
 
-https://github.com/lupyuen/incubator-nuttx-apps/blob/rusti2c/system/i2c/i2c_get.c#L158-L206
+How do we call __I2C_TRANSFER__ from a NuttX App? Thanks to the I2C Demo App we have the answer...
 
 ```c
 int i2ctool_get(FAR struct i2ctool_s *i2ctool, int fd, uint8_t regaddr,
@@ -103,9 +101,9 @@ int i2ctool_get(FAR struct i2ctool_s *i2ctool, int fd, uint8_t regaddr,
   int ret = i2cdev_transfer(fd, msg, 2);
 ```
 
-__i2cdev_transfer__ is defined as...
+[(Source)](https://github.com/lupyuen/incubator-nuttx-apps/blob/rusti2c/system/i2c/i2c_get.c#L158-L206)
 
-https://github.com/lupyuen/incubator-nuttx-apps/blob/rusti2c/system/i2c/i2c_devif.c#L117-L129
+__i2cdev_transfer__ is defined as...
 
 ```c
 int i2cdev_transfer(int fd, FAR struct i2c_msg_s *msgv, int msgc)
@@ -123,13 +121,13 @@ int i2cdev_transfer(int fd, FAR struct i2c_msg_s *msgv, int msgc)
 }
 ```
 
+[(Source)](https://github.com/lupyuen/incubator-nuttx-apps/blob/rusti2c/system/i2c/i2c_devif.c#L117-L129)
+
 Let's port this to Rust.
 
 # C Types and Constants
 
 Earlier we've seen __i2c_msg_s__ and __i2c_transfer_s__. They are defined as...
-
-https://github.com/lupyuen/incubator-nuttx/blob/rusti2c/include/nuttx/i2c/i2c_master.h#L208-L215
 
 ```c
 struct i2c_msg_s
@@ -142,7 +140,7 @@ struct i2c_msg_s
 };
 ```
 
-https://github.com/lupyuen/incubator-nuttx/blob/rusti2c/include/nuttx/i2c/i2c_master.h#L231-L235
+[(Source)](https://github.com/lupyuen/incubator-nuttx/blob/rusti2c/include/nuttx/i2c/i2c_master.h#L208-L215)
 
 ```c
 struct i2c_transfer_s
@@ -152,34 +150,54 @@ struct i2c_transfer_s
 };
 ```
 
-__I2CIOC_TRANSFER__ is defined as...
+[(Source)](https://github.com/lupyuen/incubator-nuttx/blob/rusti2c/include/nuttx/i2c/i2c_master.h#L231-L235)
 
-https://github.com/lupyuen/incubator-nuttx/blob/rusti2c/include/nuttx/i2c/i2c_master.h#L105-L129
+__I2CIOC_TRANSFER__ is defined as...
 
 ```c
 #define I2CIOC_TRANSFER      _I2CIOC(0x0001)
 ```
 
-___I2CIOC__ is defined as...
+[(Source)](https://github.com/lupyuen/incubator-nuttx/blob/rusti2c/include/nuttx/i2c/i2c_master.h#L105-L129)
 
-https://github.com/lupyuen/incubator-nuttx/blob/rusti2c/include/nuttx/fs/ioctl.h#L467-L468
+___I2CIOC__ is defined as...
 
 ```c
 #define _I2CIOC(nr)       _IOC(_I2CBASE,nr)
 ```
 
-___IOC__ and ___I2CBASE__ are defined as...
+[(Source)](https://github.com/lupyuen/incubator-nuttx/blob/rusti2c/include/nuttx/fs/ioctl.h#L467-L468)
 
-https://github.com/lupyuen/incubator-nuttx/blob/rusti2c/include/nuttx/fs/ioctl.h#L107
+___IOC__ and ___I2CBASE__ are defined as...
 
 ```c
 #define _IOC(type,nr)   ((type)|(nr))
 ```
 
-https://github.com/lupyuen/incubator-nuttx/blob/rusti2c/include/nuttx/fs/ioctl.h#L73
+[(Source)](https://github.com/lupyuen/incubator-nuttx/blob/rusti2c/include/nuttx/fs/ioctl.h#L107)
 
 ```c
 #define _I2CBASE        (0x2100) /* I2C driver commands */
 ```
 
-We'll port these C Types and Constants to Rust too.
+[(Source)](https://github.com/lupyuen/incubator-nuttx/blob/rusti2c/include/nuttx/fs/ioctl.h#L73)
+
+We'll port these C Types and Constants to Rust as well.
+
+# Test I2C Port
+
+Yep our Rust app reads the I2C Register correctly!
+
+```text
+NuttShell (NSH) NuttX-10.2.0-RC0
+nsh> rust_i2c
+Hello from Rust!
+test_i2c
+i2cdrvr_ioctl: cmd=2101 arg=4201c378
+bl602_i2c_transfer: subflag=1, subaddr=0xd0, sublen=1
+bl602_i2c_recvdata: count=1, temp=0x60
+bl602_i2c_transfer: i2c transfer success
+test_i2c: Register 0xd0 is 0x60
+Done!
+nsh>
+```
