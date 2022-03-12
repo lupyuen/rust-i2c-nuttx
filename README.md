@@ -213,9 +213,12 @@ pub fn test_i2c() {
             length:    start.len() as ssize_t,  //  Length of the buffer in bytes
 
             //  For BL602: Register ID must be passed as I2C Sub Address
+            #[cfg(target_arch = "riscv32")]  //  If architecture is RISCV 32-bit...
             flags:     I2C_M_NOSTOP,  //  I2C Flags: Send I2C Sub Address
-            //  TODO: Otherwise pass Register ID as I2C Data
-            //  flags: 0,
+            
+            //  Otherwise pass Register ID as I2C Data
+            #[cfg(not(target_arch = "riscv32"))]  //  If architecture is not RISCV 32-bit...
+            flags:     0,  //  I2C Flags: None
         },
         //  Second I2C Message: Receive Register Value
         i2c_msg_s {
