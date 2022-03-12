@@ -1,4 +1,4 @@
-//! Test I2C Port
+//! Test NuttX I2C Port
 
 //  Import Libraries
 use crate::{      //  Local Library
@@ -14,7 +14,7 @@ const BME280_ADDR: u16 = 0x77;
 const BME280_FREQ: u32 = 400000;
 
 /// I2C Register that contains the Device ID
-const BME280_REG_ID: u8 = 0xD0;
+const BME280_REG_ID:  u8 = 0xD0;
 
 /// Device ID of BME280
 const BME280_CHIP_ID: u8 = 0x60;
@@ -32,16 +32,16 @@ pub fn test_i2c() {
     //  Read one I2C Register, starting at Device ID
     let mut start = [BME280_REG_ID ; 1];
     let mut buf   = [0u8 ; 1];
-    let size      = 1;
 
-    //  Compose I2C Request
-    let msg: [i2c_msg_s; 2] = [
+    //  Compose I2C Transfer
+    let msg: [i2c_msg_s ; 2] = [
         //  First I2C Message: Send Register ID
         i2c_msg_s {
             frequency: BME280_FREQ,   //  I2C Frequency
             addr:      BME280_ADDR,   //  I2C Address
-            buffer:    start.as_mut_ptr(),  //  Buffer to be sent
-            length:    1,             //  Length of the buffer in bytes            
+            buffer:    start.as_mut_ptr(),      //  Buffer to be sent
+            length:    start.len() as ssize_t,  //  Length of the buffer in bytes
+
             //  For BL602: Register ID must be passed as I2C Sub Address
             flags:     I2C_M_NOSTOP,  //  I2C Flags: Send I2C Sub Address
             //  TODO: Otherwise pass Register ID as I2C Data
@@ -51,28 +51,27 @@ pub fn test_i2c() {
         i2c_msg_s {
             frequency: BME280_FREQ,  //  I2C Frequency
             addr:      BME280_ADDR,  //  I2C Address
-            buffer:    buf.as_mut_ptr(),  //  Buffer to be received
-            length:    size,         //  Length of the buffer in bytes
-            flags:     I2C_M_READ,   //  I2C Flags: Read from I2C
+            buffer:    buf.as_mut_ptr(),      //  Buffer to be received
+            length:    buf.len() as ssize_t,  //  Length of the buffer in bytes
+            flags:     I2C_M_READ,   //  I2C Flags: Read from I2C Device
         },
     ];
 
-    /*
-    struct i2c_transfer_s xfer;
-    /* Set up the IOCTL argument */
-    xfer.msgv = msgv;
-    xfer.msgc = msgc;
-    /* Perform the IOCTL */
-    ioctl(fd, I2CIOC_TRANSFER, (unsigned long)((uintptr_t)&xfer));
-    */
+    //  Compose ioctl Argument
+    let xfer = i2c_transfer_s {
+        msgv: msg.as_ptr(),         //  Array of I2C messages for the transfer
+        msgc: msg.len() as size_t,  //  Number of messages in the array
+    };
 
-    /*
-    //  Execute I2C Request
+    //  Execute I2C Transfer
     let ret = unsafe { 
-        ioctl(i2c, ???, ???) 
+        ioctl(
+            i2c,
+            I2CIOC_TRANSFER,
+            &xfer
+        )
     };
     assert!(ret >= 0);
-    */
 
     //  Show the received Register Value
     println!(
