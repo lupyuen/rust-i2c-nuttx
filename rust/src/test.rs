@@ -2,9 +2,9 @@
 
 //  Import Libraries
 use crate::{      //  Local Library
-    close, ioctl, open, sleep,         //  NuttX Functions
-    size_t, ssize_t,                   //  NuttX Types
-    I2C_M_NOSTOP, I2C_M_READ, O_RDWR,  //  NuttX Constants
+    close, ioctl, open, sleep,  //  NuttX Functions
+    size_t, ssize_t,            //  NuttX Types
+    I2CIOC_TRANSFER, I2C_M_NOSTOP, I2C_M_READ, O_RDWR,  //  NuttX Constants
 };
 
 /// I2C Address of BME280

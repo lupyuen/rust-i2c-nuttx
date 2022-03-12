@@ -154,7 +154,7 @@ struct i2c_transfer_s
 
 __I2CIOC_TRANSFER__ is defined as...
 
-https://github.com/lupyuen/incubator-nuttx/blob/rusti2c/include/nuttx/i2c/i2c_master.h#L113-L119
+https://github.com/lupyuen/incubator-nuttx/blob/rusti2c/include/nuttx/i2c/i2c_master.h#L105-L129
 
 ```c
 #define I2CIOC_TRANSFER      _I2CIOC(0x0001)

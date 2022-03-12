@@ -16,13 +16,6 @@ use core::{            //  Rust Core Library
     panic::PanicInfo,  //  Panic Handler
     str::FromStr,      //  For converting `str` to `String`
 };
-use embedded_hal::{           //  Rust Embedded HAL
-    digital::v2::OutputPin,   //  GPIO Output
-    blocking::{               //  Blocking I/O
-        delay::DelayMs,       //  Delay Interface
-        spi::Transfer,        //  SPI Transfer
-    },
-};
 
 #[no_mangle]                 //  Don't mangle the function name
 extern "C" fn rust_main() {  //  Declare `extern "C"` because it will be called by NuttX
@@ -118,31 +111,59 @@ extern "C" {  //  Import POSIX Functions. TODO: Import with bindgen from https:/
     pub fn exit(status: u32) -> !;
 }
 
-/// GPIO ioctl Commands. TODO: Import with bindgen from https://github.com/lupyuen/incubator-nuttx/blob/rust/include/nuttx/ioexpander/gpio.h
+//  GPIO ioctl Commands. TODO: Import with bindgen from https://github.com/lupyuen/incubator-nuttx/blob/rust/include/nuttx/ioexpander/gpio.h
+/// Set the value of an output GPIO
 pub const GPIOC_WRITE:      i32 = _GPIOBASE | 1;  //  _GPIOC(1)
+/// Read the value of an input or output GPIO
 pub const GPIOC_READ:       i32 = _GPIOBASE | 2;  //  _GPIOC(2)
+/// Return the GPIO pin type.
 pub const GPIOC_PINTYPE:    i32 = _GPIOBASE | 3;  //  _GPIOC(3)
+/// Register to receive a signal whenever there an interrupt
+/// is received on an input gpio pin.  This feature, of course,
+/// depends upon interrupt GPIO support from the platform.
 pub const GPIOC_REGISTER:   i32 = _GPIOBASE | 4;  //  _GPIOC(4)
+/// Stop receiving signals for pin interrupts.
 pub const GPIOC_UNREGISTER: i32 = _GPIOBASE | 5;  //  _GPIOC(5)
+/// Set the GPIO pin type.
 pub const GPIOC_SETPINTYPE: i32 = _GPIOBASE | 6;  //  _GPIOC(6)
 
-/// GPIO Constants. TODO: Import with bindgen from https://github.com/lupyuen/incubator-nuttx/blob/rust/include/fcntl.h
-pub const _GPIOBASE: i32 = 0x2300; /* GPIO driver commands */
+//  GPIO Constants. TODO: Import with bindgen from https://github.com/lupyuen/incubator-nuttx/blob/rust/include/fcntl.h
+/// GPIO driver commands
+pub const _GPIOBASE: i32 = 0x2300;
 //  #define _GPIOC(nr)       _IOC(_GPIOBASE,nr)
 //  #define _IOC(type,nr)    ((type)|(nr))
 
-/// I2C Constants. TODO: Import with bindgen from https://github.com/lupyuen/incubator-nuttx/blob/rusti2c/include/nuttx/i2c/i2c_master.h#L93-L96
-pub const I2C_M_READ:    u16 = 0x0001; /* Read data, from slave to master */
-pub const I2C_M_TEN:     u16 = 0x0002; /* Ten bit address */
-pub const I2C_M_NOSTOP:  u16 = 0x0040; /* Message should not end with a STOP */
-pub const I2C_M_NOSTART: u16 = 0x0080; /* Message should not begin with a START */
+//  I2C ioctl Commands.  TODO: Import with bindgen from https://github.com/lupyuen/incubator-nuttx/blob/rusti2c/include/nuttx/i2c/i2c_master.h#L105-L129
+/// Perform an I2C transfer
+pub const I2CIOC_TRANSFER: i32 = _I2CBASE | 0x0001;  //  _I2CIOC(0x0001)
+/// Perform an I2C bus reset in an attempt to break loose stuck I2C devices.
+pub const I2CIOC_RESET:    i32 = _I2CBASE | 0x0002;  //  _I2CIOC(0x0002)
+//  #define _I2CIOC(nr)       _IOC(_I2CBASE,nr)
+//  #define _IOC(type,nr)     ((type)|(nr))
 
-/// TODO: Import with bindgen from https://github.com/lupyuen/incubator-nuttx/blob/rust/include/fcntl.h
-pub const O_RDONLY: i32 = 1 << 0;        /* Open for read access (only) */
-pub const O_RDOK:   i32 = O_RDONLY;      /* Read access is permitted (non-standard) */
-pub const O_WRONLY: i32 = 1 << 1;        /* Open for write access (only) */
-pub const O_WROK:   i32 = O_WRONLY;      /* Write access is permitted (non-standard) */
-pub const O_RDWR:   i32 = O_RDOK|O_WROK; /* Open for both read & write access */
+//  I2C Constants. TODO: Import with bindgen from https://github.com/lupyuen/incubator-nuttx/blob/rusti2c/include/nuttx/i2c/i2c_master.h#L93-L96
+/// Read data, from slave to master
+pub const I2C_M_READ:    u16 = 0x0001;
+/// Ten bit address
+pub const I2C_M_TEN:     u16 = 0x0002;
+/// Message should not end with a STOP
+pub const I2C_M_NOSTOP:  u16 = 0x0040;
+/// Message should not begin with a START
+pub const I2C_M_NOSTART: u16 = 0x0080;
+/// I2C driver commands
+pub const _I2CBASE:      i32 = 0x2100; 
+
+//  Input / Output Constants. TODO: Import with bindgen from https://github.com/lupyuen/incubator-nuttx/blob/rust/include/fcntl.h
+/// Open for read access (only)
+pub const O_RDONLY: i32 = 1 << 0;       
+/// Read access is permitted (non-standard)
+pub const O_RDOK:   i32 = O_RDONLY;      
+/// Open for write access (only)
+pub const O_WRONLY: i32 = 1 << 1;        
+/// Write access is permitted (non-standard)
+pub const O_WROK:   i32 = O_WRONLY;      
+/// Open for both read & write access
+pub const O_RDWR:   i32 = O_RDOK|O_WROK; 
 
 /// size_t for NuttX 32-bit. TODO: Support other architectures
 #[allow(non_camel_case_types)]
