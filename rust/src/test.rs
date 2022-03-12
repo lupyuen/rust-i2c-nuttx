@@ -83,13 +83,11 @@ pub fn test_i2c() {
     //  Register Value must be BME280 Device ID (0x60)
     assert!(buf[0] == BME280_CHIP_ID);
      
+    //  Close the I2C Port
+    unsafe { close(i2c); }
+
     //  Sleep 5 seconds
     unsafe { sleep(5); }
-
-    //  Close the I2C Port
-    unsafe {
-        close(i2c);    
-    }
 }
 
 /// I2C transaction segment beginning with a START. A number of these can
