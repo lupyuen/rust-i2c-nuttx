@@ -42,7 +42,7 @@ cp ../config .config
 make menuconfig 
 ```
 
-In menuconfig, enable the Rust I2C Test App under "Application Configuration" → "Examples".
+In menuconfig, enable the Rust I2C App under "Application Configuration" → "Examples".
 
 In NuttX Shell, enter this to run the app...
 

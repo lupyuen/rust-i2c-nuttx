@@ -1,0 +1,29 @@
+#
+# For a description of the syntax of this configuration file,
+# see the file kconfig-language.txt in the NuttX tools repository.
+#
+
+config EXAMPLES_RUST_I2C
+	tristate "Rust I2C App"
+	default n
+	---help---
+		Enable the Rust I2C App
+
+if EXAMPLES_RUST_I2C
+
+config EXAMPLES_RUST_I2C_PROGNAME
+	string "Program name"
+	default "rust_i2c"
+	---help---
+		This is the name of the program that will be used when the NSH ELF
+		program is installed.
+
+config EXAMPLES_RUST_I2C_PRIORITY
+	int "Rust I2C App task priority"
+	default 100
+
+config EXAMPLES_RUST_I2C_STACKSIZE
+	int "Rust I2C App stack size"
+	default DEFAULT_TASK_STACKSIZE
+
+endif
