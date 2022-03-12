@@ -266,7 +266,42 @@ pub fn test_i2c() {
 }
 ```
 
-[(Source)](src/test.rs)
+[(Source)](rust/src/test.rs)
+
+The NuttX Types are ported from C to Rust like so...
+
+```rust
+/// I2C Message Struct: I2C transaction segment beginning with a START. A number of these can
+/// be transferred together to form an arbitrary sequence of write/read
+/// transfer to an I2C device.
+/// TODO: Import with bindgen from https://github.com/lupyuen/incubator-nuttx/blob/rusti2c/include/nuttx/i2c/i2c_master.h#L208-L215
+#[repr(C)]
+pub struct i2c_msg_s {
+    /// I2C Frequency
+    pub frequency: u32,
+    /// I2C Address
+    pub addr: u16,
+    /// I2C Flags (I2C_M_*)
+    pub flags: u16,
+    /// Buffer to be transferred
+    pub buffer: *mut u8,
+    /// Length of the buffer in bytes
+    pub length: ssize_t,
+}
+
+/// I2C Transfer Struct: This structure is used to communicate with the I2C character driver in
+/// order to perform IOCTL transfers.
+/// TODO: Import with bindgen from https://github.com/lupyuen/incubator-nuttx/blob/rusti2c/include/nuttx/i2c/i2c_master.h#L231-L235
+#[repr(C)]
+pub struct i2c_transfer_s {
+    /// Array of I2C messages for the transfer
+    pub msgv: *const i2c_msg_s,
+    /// Number of messages in the array
+    pub msgc: size_t,
+}
+```
+
+[(Source)](rust/src/lib.rs)
 
 # Test I2C Port
 

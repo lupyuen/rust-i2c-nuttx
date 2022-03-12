@@ -2,8 +2,8 @@
 
 //  Import Libraries
 use crate::{      //  Local Library
-    close, ioctl, open, sleep,  //  NuttX Functions
-    size_t, ssize_t,            //  NuttX Types
+    close, ioctl, open, sleep,                          //  NuttX Functions
+    i2c_msg_s, i2c_transfer_s, size_t, ssize_t,         //  NuttX Types
     I2CIOC_TRANSFER, I2C_M_NOSTOP, I2C_M_READ, O_RDWR,  //  NuttX Constants
 };
 
@@ -50,7 +50,7 @@ pub fn test_i2c() {
             #[cfg(not(target_arch = "riscv32"))]  //  If architecture is not RISC-V 32-bit...
             flags:     0,  //  I2C Flags: None
 
-            //  TODO: Check for BL602 specifically, not just RISC-V 32-bit
+            //  TODO: Check for BL602 specifically (by target_abi?), not just RISC-V 32-bit
         },
         //  Second I2C Message: Receive Register Value
         i2c_msg_s {
@@ -93,33 +93,4 @@ pub fn test_i2c() {
 
     //  Sleep 5 seconds
     unsafe { sleep(5); }
-}
-
-/// I2C transaction segment beginning with a START. A number of these can
-/// be transferred together to form an arbitrary sequence of write/read
-/// transfer to an I2C device.
-/// TODO: Import with bindgen from https://github.com/lupyuen/incubator-nuttx/blob/rusti2c/include/nuttx/i2c/i2c_master.h#L208-L215
-#[repr(C)]
-pub struct i2c_msg_s {
-    /// I2C Frequency
-    pub frequency: u32,
-    /// I2C Address
-    pub addr: u16,
-    /// I2C Flags (I2C_M_*)
-    pub flags: u16,
-    /// Buffer to be transferred
-    pub buffer: *mut u8,
-    /// Length of the buffer in bytes
-    pub length: ssize_t,
-}
-
-/// This structure is used to communicate with the I2C character driver in
-/// order to perform IOCTL transfers.
-/// TODO: Import with bindgen from https://github.com/lupyuen/incubator-nuttx/blob/rusti2c/include/nuttx/i2c/i2c_master.h#L231-L235
-#[repr(C)]
-pub struct i2c_transfer_s {
-    /// Array of I2C messages for the transfer
-    pub msgv: *const i2c_msg_s,
-    /// Number of messages in the array
-    pub msgc: size_t,
 }
