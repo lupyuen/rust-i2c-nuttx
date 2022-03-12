@@ -6,18 +6,101 @@ use core::{
 use embedded_hal::{
     blocking::{
         delay::{DelayMs, DelayUs},
-        spi::{Transfer, Write},
+        i2c,
+        spi,
     },
     digital::v2,
 };
 use crate::{
     close, ioctl, read, usleep, write,
-    GPIOC_READ, GPIOC_WRITE, O_RDWR,
+    i2c_msg_s, i2c_transfer_s, size_t, ssize_t,
+    GPIOC_READ, GPIOC_WRITE, I2CIOC_TRANSFER, I2C_M_NOSTOP, I2C_M_READ, O_RDWR,
     String,
 };
 
+/// NuttX I2C Read
+impl i2c::Read for I2c {
+    /// Error Type
+    type Error = ();
+
+    /// TODO: Read I2C data
+    fn read(&mut self, addr: u8, buf: &mut [u8]) -> Result<(), Self::Error> {
+        //  Read one I2C Register, starting at Device ID
+        let mut start = [addr ; 1];
+
+        //  Compose I2C Transfer
+        let msg: [i2c_msg_s ; 2] = [
+            //  First I2C Message: Send Register ID
+            i2c_msg_s {
+                frequency: BME280_FREQ,   //  I2C Frequency
+                addr:      BME280_ADDR,   //  I2C Address
+                buffer:    start.as_mut_ptr(),      //  Buffer to be sent
+                length:    start.len() as ssize_t,  //  Length of the buffer in bytes
+
+                //  For BL602: Register ID must be passed as I2C Sub Address
+                #[cfg(target_arch = "riscv32")]  //  If architecture is RISC-V 32-bit...
+                flags:     I2C_M_NOSTOP,  //  I2C Flags: Send I2C Sub Address
+                
+                //  Otherwise pass Register ID as I2C Data
+                #[cfg(not(target_arch = "riscv32"))]  //  If architecture is not RISC-V 32-bit...
+                flags:     0,  //  I2C Flags: None
+
+                //  TODO: Check for BL602 specifically (by target_abi?), not just RISC-V 32-bit
+            },
+            //  Second I2C Message: Receive Register Value
+            i2c_msg_s {
+                frequency: BME280_FREQ,  //  I2C Frequency
+                addr:      BME280_ADDR,  //  I2C Address
+                buffer:    buf.as_mut_ptr(),      //  Buffer to be received
+                length:    buf.len() as ssize_t,  //  Length of the buffer in bytes
+                flags:     I2C_M_READ,   //  I2C Flags: Read from I2C Device
+            },
+        ];
+
+        //  Compose ioctl Argument
+        let xfer = i2c_transfer_s {
+            msgv: msg.as_ptr(),         //  Array of I2C messages for the transfer
+            msgc: msg.len() as size_t,  //  Number of messages in the array
+        };
+
+        //  Execute I2C Transfer
+        let ret = unsafe { 
+            ioctl(
+                self.fd,
+                I2CIOC_TRANSFER,
+                &xfer
+            )
+        };
+        assert!(ret >= 0);   
+
+        Ok(())
+    }
+}
+
+/// NuttX I2C Write
+impl i2c::Write for I2c {
+    /// Error Type
+    type Error = ();
+
+    /// TODO: Write I2C data
+    fn write(&mut self, addr: u8, buf: &[u8]) -> Result<(), Self::Error> {
+        Ok(())
+    }
+}
+
+/// NuttX I2C WriteRead
+impl i2c::WriteRead for I2c {
+    /// Error Type
+    type Error = ();
+
+    /// TODO: Write and read I2C data
+    fn write_read(&mut self, addr: u8, wbuf: &[u8], rbuf: &mut [u8]) -> Result<(), Self::Error> {
+        Ok(())
+    }
+}
+
 /// NuttX SPI Transfer
-impl Transfer<u8> for Spi {
+impl spi::Transfer<u8> for Spi {
     /// Error Type
     type Error = ();
 
@@ -41,7 +124,7 @@ impl Transfer<u8> for Spi {
 }
 
 /// NuttX SPI Write
-impl Write<u8> for Spi{
+impl spi::Write<u8> for Spi{
     /// Error Type
     type Error = ();
 
@@ -162,6 +245,8 @@ impl DelayMs<u32> for Delay {
     }
 }
 
+/// TODO: New NuttX I2C Bus
+
 /// New NuttX SPI Bus
 impl Spi {
     /// Create an SPI Bus from a Device Path (e.g. "/dev/spitest0")
@@ -239,6 +324,14 @@ impl Delay {
 }
 
 /// Drop NuttX SPI Bus
+impl Drop for I2c {
+    /// Close the SPI Bus
+    fn drop(&mut self) {
+        unsafe { close(self.fd) };
+    }
+}
+
+/// Drop NuttX SPI Bus
 impl Drop for Spi {
     /// Close the SPI Bus
     fn drop(&mut self) {
@@ -268,6 +361,12 @@ impl Drop for InterruptPin {
     fn drop(&mut self) {
         unsafe { close(self.fd) };
     }
+}
+
+/// NuttX I2C Struct
+pub struct I2c {
+    /// NuttX File Descriptor
+    fd: i32,
 }
 
 /// NuttX SPI Struct
