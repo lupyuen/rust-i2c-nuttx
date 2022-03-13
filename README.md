@@ -320,3 +320,40 @@ test_i2c: Register 0xd0 is 0x60
 Done!
 nsh>
 ```
+
+# Rust Embedded HAL
+
+Rust Embedded HAL has a standard API for I2C Operations. Let's wrap the NuttX I2C ioctl Commands so that it exposes these  Rust Embedded HAL interfaces...
+
+```rust
+/// NuttX I2C Read
+impl i2c::Read for I2c {
+    /// TODO: Error Type
+    type Error = ();
+
+    /// TODO: Read I2C data
+    fn read(&mut self, addr: u8, buf: &mut [u8]) -> Result<(), Self::Error> { ... }
+}
+
+/// NuttX I2C Write
+impl i2c::Write for I2c {
+    /// TODO: Error Type
+    type Error = ();
+
+    /// TODO: Write I2C data
+    fn write(&mut self, addr: u8, buf: &[u8]) -> Result<(), Self::Error> { ... }
+}
+
+/// NuttX I2C WriteRead
+impl i2c::WriteRead for I2c {
+    /// TODO: Error Type
+    type Error = ();
+
+    /// TODO: Write and read I2C data
+    fn write_read(&mut self, addr: u8, wbuf: &[u8], rbuf: &mut [u8]) -> Result<(), Self::Error> { ... }
+}
+```
+
+[(Source)](rust/src/nuttx_hal.rs)
+
+TODO

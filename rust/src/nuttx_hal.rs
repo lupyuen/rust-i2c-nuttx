@@ -20,7 +20,7 @@ use crate::{
 
 /// NuttX I2C Read
 impl i2c::Read for I2c {
-    /// Error Type
+    /// TODO: Error Type
     type Error = ();
 
     /// TODO: Read I2C data
@@ -79,7 +79,7 @@ impl i2c::Read for I2c {
 
 /// NuttX I2C Write
 impl i2c::Write for I2c {
-    /// Error Type
+    /// TODO: Error Type
     type Error = ();
 
     /// TODO: Write I2C data
@@ -90,7 +90,7 @@ impl i2c::Write for I2c {
 
 /// NuttX I2C WriteRead
 impl i2c::WriteRead for I2c {
-    /// Error Type
+    /// TODO: Error Type
     type Error = ();
 
     /// TODO: Write and read I2C data
@@ -101,7 +101,7 @@ impl i2c::WriteRead for I2c {
 
 /// NuttX SPI Transfer
 impl spi::Transfer<u8> for Spi {
-    /// Error Type
+    /// TODO: Error Type
     type Error = ();
 
     /// Transfer SPI data
@@ -125,7 +125,7 @@ impl spi::Transfer<u8> for Spi {
 
 /// NuttX SPI Write
 impl spi::Write<u8> for Spi{
-    /// Error Type
+    /// TODO: Error Type
     type Error = ();
 
     /// Write SPI data
@@ -141,7 +141,7 @@ impl spi::Write<u8> for Spi{
 
 /// Set NuttX Output Pin
 impl v2::OutputPin for OutputPin {
-    /// Error Type
+    /// TODO: Error Type
     type Error = ();
 
     /// Set the GPIO Output to High
@@ -165,7 +165,7 @@ impl v2::OutputPin for OutputPin {
 
 /// Read NuttX Input Pin
 impl v2::InputPin for InputPin {
-    /// Error Type
+    /// TODO: Error Type
     type Error = ();
 
     /// Return true if GPIO Input is high
@@ -190,7 +190,7 @@ impl v2::InputPin for InputPin {
 
 /// Read NuttX Interrupt Pin
 impl v2::InputPin for InterruptPin {
-    /// Error Type
+    /// TODO: Error Type
     type Error = ();
 
     /// Return true if GPIO Input is high
@@ -215,7 +215,7 @@ impl v2::InputPin for InterruptPin {
 
 /// Set NuttX Unused Pin
 impl v2::OutputPin for UnusedPin {
-    /// Error Type
+    /// TODO: Error Type
     type Error = ();
 
     /// Set the pin to high
