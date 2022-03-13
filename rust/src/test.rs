@@ -1,7 +1,10 @@
 //! Test NuttX I2C Port
 
 //  Import Libraries
-use embedded_hal::blocking::i2c::WriteRead;  //  Rust Embedded HAL
+use embedded_hal::blocking::i2c::{  //  Rust Embedded HAL for I2C
+    Write,     //  Write I2C Data
+    WriteRead  //  Write and Read I2C Data
+};
 use crate::{      //  Local Library
     nuttx_hal,    //  NuttX Embedded HAL
     close, ioctl, open, sleep,                          //  NuttX Functions
@@ -15,8 +18,11 @@ const BME280_ADDR: u16 = 0x77;
 /// I2C Frequency in Hz
 const BME280_FREQ: u32 = 400000;
 
-/// I2C Register that contains the Device ID
-const BME280_REG_ID:  u8 = 0xD0;
+/// I2C Register that contains the BME280 Device ID
+const BME280_REG_ID: u8 = 0xD0;
+
+/// I2C Register that controls the BME280 Power Mode
+const BME280_REG_CTRL_MEASL: u8 = 0xF4;
 
 /// Device ID of BME280
 const BME280_CHIP_ID: u8 = 0x60;
@@ -32,7 +38,7 @@ pub fn test_hal_read() {
     );
 
     //  Buffer for received I2C data
-    let mut buf = [0u8 ; 1];
+    let mut buf = [0 ; 1];
 
     //  Read one I2C Register, starting at Device ID
     i2c.write_read(
@@ -50,6 +56,49 @@ pub fn test_hal_read() {
 
     //  Register Value must be BME280 Device ID (0x60)
     assert_eq!(buf[0], BME280_CHIP_ID);
+
+    //  Sleep 5 seconds
+    unsafe { sleep(5); }
+}
+
+/// Test the I2C HAL by writing an I2C Register
+pub fn test_hal_write() {
+    println!("test_hal_write");
+
+    //  Open I2C Port
+    let mut i2c = nuttx_hal::I2c::new(
+        "/dev/i2c0",  //  I2C Port
+        BME280_FREQ,  //  I2C Frequency
+    );
+
+    //  Buffer for I2C data
+    let mut buf = [0 ; 1];
+
+    //  TODO: Read from register
+
+    //  Write to register
+    i2c.write(
+        BME280_ADDR as u8,  //  I2C Address
+        &[BME280_REG_CTRL_MEASL, 0x2F]
+    ).expect("write register failed");
+
+    //  Read from register
+    i2c.write_read(
+        BME280_ADDR as u8,  //  I2C Address
+        &[BME280_REG_CTRL_MEASL],   //  Register ID
+        &mut buf            //  Buffer to be received
+    ).expect("read register failed");
+
+    //  Write to register
+    i2c.write(
+        BME280_ADDR as u8,  //  I2C Address
+        &[BME280_REG_CTRL_MEASL, 0x00]
+    ).expect("write register failed");
+
+    //  TODO: Read from register
+
+    //  TODO: Register Value must be ???
+    assert_eq!(buf[0], 0x00);
 
     //  Sleep 5 seconds
     unsafe { sleep(5); }

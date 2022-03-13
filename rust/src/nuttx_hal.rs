@@ -24,32 +24,63 @@ impl i2c::Read for I2c {
     /// TODO: Error Type
     type Error = ();
 
-    /// TODO: Read I2C data
+    /// TODO: Read `buf` from I2C Port
     fn read(&mut self, addr: u8, buf: &mut [u8]) -> Result<(), Self::Error> {
         Ok(())
     }
 }
 */
 
-/*
 /// NuttX I2C Write
 impl i2c::Write for I2c {
     /// TODO: Error Type
     type Error = ();
 
-    /// TODO: Write I2C data
+    /// Write `buf` to I2C Port
     fn write(&mut self, addr: u8, buf: &[u8]) -> Result<(), Self::Error> {
+        //  Copy to local buffer because we need a mutable reference
+        let mut buf2 = [0 ; 64];
+        assert!(buf.len() <= buf2.len());
+        buf2[..buf.len()].copy_from_slice(buf);
+
+        //  Compose I2C Transfer
+        let msg: [i2c_msg_s ; 1] = [
+            //  I2C Message: Write I2C data
+            i2c_msg_s {
+                frequency: self.frequency,  //  I2C Frequency
+                addr:      addr as u16,     //  I2C Address
+                buffer:    buf2.as_mut_ptr(),     //  Buffer to be sent
+                length:    buf.len() as ssize_t,  //  Length of the buffer in bytes
+                flags:     0,  //  I2C Flags: None
+            }
+        ];
+
+        //  Compose ioctl Argument
+        let xfer = i2c_transfer_s {
+            msgv: msg.as_ptr(),         //  Array of I2C messages for the transfer
+            msgc: msg.len() as size_t,  //  Number of messages in the array
+        };
+
+        //  Execute I2C Transfer
+        let ret = unsafe { 
+            ioctl(
+                self.fd,
+                I2CIOC_TRANSFER,
+                &xfer
+            )
+        };
+        assert!(ret >= 0);   
         Ok(())
     }
 }
-*/
 
 /// NuttX I2C WriteRead
 impl i2c::WriteRead for I2c {
     /// TODO: Error Type
     type Error = ();
 
-    /// Write and read I2C data. We assume this is a Read I2C Register operation, with Register ID at wbuf[0].
+    /// Write `wbuf` to I2C Port and read `rbuf` from I2C Port.
+    /// We assume this is a Read I2C Register operation, with Register ID at `wbuf[0]`.
     /// TODO: Handle other kinds of I2C operations
     fn write_read(&mut self, addr: u8, wbuf: &[u8], rbuf: &mut [u8]) -> Result<(), Self::Error> {
         //  We assume this is a Read I2C Register operation, with Register ID at wbuf[0]
@@ -103,7 +134,6 @@ impl i2c::WriteRead for I2c {
             )
         };
         assert!(ret >= 0);   
-
         Ok(())
     }
 }
