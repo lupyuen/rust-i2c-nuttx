@@ -347,7 +347,7 @@ Yep our Rust app reads the BME280 I2C Register correctly!
 
 # Rust Embedded HAL
 
-Rust Embedded HAL defines a standard API for I2C Operations. Let's wrap the NuttX I2C ioctl Commands so that it exposes these Rust Embedded HAL interfaces...
+Rust Embedded HAL defines a standard API for I2C Operations. Let's wrap the NuttX I2C ioctl() Commands and expose as Rust Embedded HAL interfaces...
 
 ```rust
 /// NuttX I2C Read
