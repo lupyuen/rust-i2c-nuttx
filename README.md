@@ -497,22 +497,26 @@ pub fn test_hal_read() {
 Rust Embedded HAL works OK for reading an I2C Register!
 
 ```text
-▒spi_test_driver_register: devpath=/dev/spitest0, spidev=0
-
-NuttShell NSH) NuttX-10.2.0-RC0
+NuttShell NSH NuttX-10.2.0-RC0
 nsh> rust_i2c
 Hello from Rust!
 ...
-test_hal
+test_hal_read
 i2cdrvr_ioctl: cmd=2101 arg=4201c360
 bl602_i2c_transfer: subflag=1, subaddr=0xd0, sublen=1
 bl602_i2c_recvdata: count=1, temp=0x60
 bl602_i2c_transfer: i2c transfer success
-test_i2c: Register 0xd0 is 0x60
+test_hal_read: Register 0xd0 is 0x60
 Done!
 nsh>
 ```
 
 # Write I2C Register
+
+TODO
+
+# Test I2C HAL Again
+
+Rust Embedded HAL works OK for writing an I2C Register!
 
 TODO
