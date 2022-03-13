@@ -22,8 +22,8 @@ const BME280_REG_ID:  u8 = 0xD0;
 const BME280_CHIP_ID: u8 = 0x60;
 
 /// Test the I2C HAL by reading an I2C Register
-pub fn test_hal() {
-    println!("test_hal");
+pub fn test_hal_read() {
+    println!("test_hal_read");
 
     //  Open I2C Port
     let mut i2c = nuttx_hal::I2c::new(
@@ -43,7 +43,7 @@ pub fn test_hal() {
 
     //  Show the received Register Value
     println!(
-        "test_i2c: Register 0x{:02x} is 0x{:02x}",
+        "test_hal_read: Register 0x{:02x} is 0x{:02x}",
         BME280_REG_ID,  //  Register ID (0xD0)
         buf[0]          //  Register Value (0x60)
     );

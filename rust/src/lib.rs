@@ -27,7 +27,7 @@ extern "C" fn rust_main() {  //  Declare `extern "C"` because it will be called 
     test::test_i2c();
 
     //  Test the I2C HAL by reading an I2C Register
-    test::test_hal();
+    test::test_hal_read();
 }
 
 /// Print a message to the serial console.
