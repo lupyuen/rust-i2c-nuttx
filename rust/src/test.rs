@@ -1,7 +1,9 @@
 //! Test NuttX I2C Port
 
 //  Import Libraries
+use embedded_hal::blocking::i2c::WriteRead;  //  Rust Embedded HAL
 use crate::{      //  Local Library
+    nuttx_hal,    //  NuttX Embedded HAL
     close, ioctl, open, sleep,                          //  NuttX Functions
     i2c_msg_s, i2c_transfer_s, size_t, ssize_t,         //  NuttX Types
     I2CIOC_TRANSFER, I2C_M_NOSTOP, I2C_M_READ, O_RDWR,  //  NuttX Constants
@@ -19,7 +21,41 @@ const BME280_REG_ID:  u8 = 0xD0;
 /// Device ID of BME280
 const BME280_CHIP_ID: u8 = 0x60;
 
-/// Test the I2C Port by reading an I2C Register
+/// Test the I2C HAL by reading an I2C Register
+pub fn test_hal() {
+    println!("test_hal");
+
+    //  Open I2C Port
+    let mut i2c = nuttx_hal::I2c::new(
+        "/dev/i2c0",  //  I2C Port
+        BME280_FREQ,  //  I2C Frequency
+    );
+
+    //  Buffer for received I2C data
+    let mut buf = [0u8 ; 1];
+
+    //  Read one I2C Register, starting at Device ID
+    i2c.write_read(
+        BME280_ADDR as u8,  //  I2C Address
+        &[BME280_REG_ID],   //  Register ID (0x60)
+        &mut buf            //  Buffer to be received
+    ).expect("read register failed");
+
+    //  Show the received Register Value
+    println!(
+        "test_i2c: Register 0x{:02x} is 0x{:02x}",
+        BME280_REG_ID,  //  Register ID (0xD0)
+        buf[0]          //  Register Value (0x60)
+    );
+
+    //  Register Value must be BME280 Device ID (0x60)
+    assert_eq!(buf[0], BME280_CHIP_ID);
+
+    //  Sleep 5 seconds
+    unsafe { sleep(5); }
+}
+
+/// Test the I2C Port by reading an I2C Register through ioctl
 pub fn test_i2c() {
     println!("test_i2c");
 
@@ -86,7 +122,7 @@ pub fn test_i2c() {
     );
 
     //  Register Value must be BME280 Device ID (0x60)
-    assert!(buf[0] == BME280_CHIP_ID);
+    assert_eq!(buf[0], BME280_CHIP_ID);
      
     //  Close the I2C Port
     unsafe { close(i2c); }

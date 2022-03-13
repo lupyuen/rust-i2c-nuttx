@@ -18,6 +18,7 @@ use crate::{
     String,
 };
 
+/*
 /// NuttX I2C Read
 impl i2c::Read for I2c {
     /// TODO: Error Type
@@ -25,15 +26,45 @@ impl i2c::Read for I2c {
 
     /// TODO: Read I2C data
     fn read(&mut self, addr: u8, buf: &mut [u8]) -> Result<(), Self::Error> {
-        //  Read one I2C Register, starting at Device ID
-        let mut start = [addr ; 1];
+        Ok(())
+    }
+}
+*/
+
+/*
+/// NuttX I2C Write
+impl i2c::Write for I2c {
+    /// TODO: Error Type
+    type Error = ();
+
+    /// TODO: Write I2C data
+    fn write(&mut self, addr: u8, buf: &[u8]) -> Result<(), Self::Error> {
+        Ok(())
+    }
+}
+*/
+
+/// NuttX I2C WriteRead
+impl i2c::WriteRead for I2c {
+    /// TODO: Error Type
+    type Error = ();
+
+    /// Write and read I2C data. We assume this is a Read I2C Register operation, with Register ID at wbuf[0].
+    /// TODO: Handle other kinds of I2C operations
+    fn write_read(&mut self, addr: u8, wbuf: &[u8], rbuf: &mut [u8]) -> Result<(), Self::Error> {
+        //  We assume this is a Read I2C Register operation, with Register ID at wbuf[0]
+        assert_eq!(wbuf.len(), 1);
+        let reg_id = wbuf[0];
+
+        //  Read I2C Registers, starting at Register ID
+        let mut start = [reg_id ; 1];
 
         //  Compose I2C Transfer
         let msg: [i2c_msg_s ; 2] = [
             //  First I2C Message: Send Register ID
             i2c_msg_s {
-                frequency: BME280_FREQ,   //  I2C Frequency
-                addr:      BME280_ADDR,   //  I2C Address
+                frequency: self.frequency,  //  I2C Frequency
+                addr:      addr as u16,     //  I2C Address
                 buffer:    start.as_mut_ptr(),      //  Buffer to be sent
                 length:    start.len() as ssize_t,  //  Length of the buffer in bytes
 
@@ -49,11 +80,11 @@ impl i2c::Read for I2c {
             },
             //  Second I2C Message: Receive Register Value
             i2c_msg_s {
-                frequency: BME280_FREQ,  //  I2C Frequency
-                addr:      BME280_ADDR,  //  I2C Address
-                buffer:    buf.as_mut_ptr(),      //  Buffer to be received
-                length:    buf.len() as ssize_t,  //  Length of the buffer in bytes
-                flags:     I2C_M_READ,   //  I2C Flags: Read from I2C Device
+                frequency: self.frequency,  //  I2C Frequency
+                addr:      addr as u16,     //  I2C Address
+                buffer:    rbuf.as_mut_ptr(),      //  Buffer to be received
+                length:    rbuf.len() as ssize_t,  //  Length of the buffer in bytes
+                flags:     I2C_M_READ,  //  I2C Flags: Read from I2C Device
             },
         ];
 
@@ -77,28 +108,6 @@ impl i2c::Read for I2c {
     }
 }
 
-/// NuttX I2C Write
-impl i2c::Write for I2c {
-    /// TODO: Error Type
-    type Error = ();
-
-    /// TODO: Write I2C data
-    fn write(&mut self, addr: u8, buf: &[u8]) -> Result<(), Self::Error> {
-        Ok(())
-    }
-}
-
-/// NuttX I2C WriteRead
-impl i2c::WriteRead for I2c {
-    /// TODO: Error Type
-    type Error = ();
-
-    /// TODO: Write and read I2C data
-    fn write_read(&mut self, addr: u8, wbuf: &[u8], rbuf: &mut [u8]) -> Result<(), Self::Error> {
-        Ok(())
-    }
-}
-
 /// NuttX SPI Transfer
 impl spi::Transfer<u8> for Spi {
     /// TODO: Error Type
@@ -110,13 +119,13 @@ impl spi::Transfer<u8> for Spi {
         let bytes_written = unsafe { 
             write(self.fd, words.as_ptr(), words.len() as u32) 
         };
-        assert!(bytes_written == words.len() as i32);
+        assert_eq!(bytes_written, words.len() as i32);
 
         //  Read response
         let bytes_read = unsafe { 
             read(self.fd, words.as_mut_ptr(), words.len() as u32) 
         };
-        assert!(bytes_read == words.len() as i32);
+        assert_eq!(bytes_read, words.len() as i32);
 
         //  Return response
         Ok(words)
@@ -134,7 +143,7 @@ impl spi::Write<u8> for Spi{
         let bytes_written = unsafe { 
             write(self.fd, words.as_ptr(), words.len() as u32) 
         };
-        assert!(bytes_written == words.len() as i32);
+        assert_eq!(bytes_written, words.len() as i32);
         Ok(())
     }
 }
@@ -245,7 +254,19 @@ impl DelayMs<u32> for Delay {
     }
 }
 
-/// TODO: New NuttX I2C Bus
+/// New NuttX I2C Bus
+impl I2c {
+    /// Create an I2C Bus from a Device Path (e.g. "/dev/i2c0")
+    #[allow(dead_code)]
+    pub fn new(path: &str, frequency: u32) -> Self {
+        //  Open the NuttX Device Path (e.g. "/dev/spitest0") for read-write
+        let fd = open(path, O_RDWR);
+        assert!(fd > 0);
+
+        //  Return the I2C Bus
+        Self { fd, frequency }
+    }
+}
 
 /// New NuttX SPI Bus
 impl Spi {
@@ -256,7 +277,7 @@ impl Spi {
         let fd = open(path, O_RDWR);
         assert!(fd > 0);
 
-        //  Return the pin
+        //  Return the SPI Bus
         Self { fd }
     }
 }
@@ -367,6 +388,8 @@ impl Drop for InterruptPin {
 pub struct I2c {
     /// NuttX File Descriptor
     fd: i32,
+    /// I2C Frequency in Hz
+    frequency: u32,
 }
 
 /// NuttX SPI Struct
