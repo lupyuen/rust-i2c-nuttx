@@ -314,7 +314,20 @@ pub struct i2c_transfer_s {
 
 # Test I2C Port
 
-Yep our Rust app reads the I2C Register correctly!
+To build the NuttX + Rust project...
+
+```bash
+cd nuttx/apps/examples/rust_i2c
+./run.sh
+```
+
+In NuttX Shell, enter this to run our Rust app...
+
+```bash
+rust_i2c
+```
+
+Our Rust app reads BME280 Register 0xD0 (Device ID), which should contain 0x60...
 
 ```text
 NuttShell (NSH) NuttX-10.2.0-RC0
@@ -330,9 +343,11 @@ Done!
 nsh>
 ```
 
+Yep our Rust app reads the BME280 I2C Register correctly!
+
 # Rust Embedded HAL
 
-Rust Embedded HAL has a standard API for I2C Operations. Let's wrap the NuttX I2C ioctl Commands so that it exposes these  Rust Embedded HAL interfaces...
+Rust Embedded HAL defines a standard API for I2C Operations. Let's wrap the NuttX I2C ioctl Commands so that it exposes these Rust Embedded HAL interfaces...
 
 ```rust
 /// NuttX I2C Read
