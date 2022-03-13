@@ -2,7 +2,9 @@
 
 (Tested on Pine64 PineCone BL602)
 
-Will Rust talk I2C on Apache NuttX RTOS for BL602? Let's find out!
+[__Follow the updates on Twitter__](https://twitter.com/MisterTechBlog/status/1502823263121989634)
+
+Will Rust talk I2C on Apache NuttX RTOS and BL602? Let's find out!
 
 This repo depends on...
 
@@ -45,6 +47,13 @@ make menuconfig
 ```
 
 In menuconfig, enable the Rust I2C App under "Application Configuration" → "Examples".
+
+To build the NuttX + Rust project...
+
+```bash
+cd nuttx/apps/examples/rust_i2c
+./run.sh
+```
 
 In NuttX Shell, enter this to run the app...
 
