@@ -85,8 +85,8 @@ pub fn test_hal_write() {
     ).expect("write register failed");
     println!("test_hal_write: Enter sleep mode");
 
-    //  Sleep 2 seconds
-    unsafe { sleep(2); }
+    //  Sleep 1 second
+    unsafe { sleep(1); }
         
     //  Read from register 0xF5
     i2c.write_read(
@@ -96,8 +96,8 @@ pub fn test_hal_write() {
     ).expect("read register failed");
     println!("test_hal_write: Register value is 0x{:02x}", buf[0]);
 
-    //  Sleep 2 seconds
-    unsafe { sleep(2); }
+    //  Sleep 1 second
+    unsafe { sleep(1); }
 
     //  Write 0xA0 to register 0xF5
     i2c.write(
@@ -106,8 +106,8 @@ pub fn test_hal_write() {
     ).expect("write register failed");
     println!("test_hal_write: Write 0xA0 to register");
 
-    //  Sleep 2 seconds
-    unsafe { sleep(2); }
+    //  Sleep 1 second
+    unsafe { sleep(1); }
 
     //  Read from register 0xF5
     i2c.write_read(
@@ -118,8 +118,8 @@ pub fn test_hal_write() {
     println!("test_hal_write: Register value is 0x{:02x}", buf[0]);
     assert_eq!(buf[0], 0xA0);
 
-    //  Sleep 2 seconds
-    unsafe { sleep(2); }
+    //  Sleep 1 second
+    unsafe { sleep(1); }
 
     //  Write 0x00 to register 0xF5
     i2c.write(
@@ -128,8 +128,8 @@ pub fn test_hal_write() {
     ).expect("write register failed");
     println!("test_hal_write: Write 0x00 to register");
 
-    //  Sleep 2 seconds
-    unsafe { sleep(2); }
+    //  Sleep 1 second
+    unsafe { sleep(1); }
 
     //  Read from register 0xF5
     i2c.write_read(

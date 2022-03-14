@@ -24,10 +24,10 @@ extern "C" fn rust_main() {  //  Declare `extern "C"` because it will be called 
     println!("Hello from Rust!");    
 
     //  Test the I2C Port by reading an I2C Register
-    test::test_i2c();
+    //  test::test_i2c();
 
     //  Test the I2C HAL by reading an I2C Register
-    test::test_hal_read();
+    //  test::test_hal_read();
 
     //  Test the I2C HAL by writing an I2C Register
     test::test_hal_write();
