@@ -513,10 +513,38 @@ nsh>
 
 # Write I2C Register
 
-TODO
+This code calls the Rust Embedded HAL to write the value 0xA0 to the I2C Register 0xF5....
 
-# Test I2C HAL Again
+```rust
+/// Test the I2C HAL by writing an I2C Register
+pub fn test_hal_write() {
+    println!("test_hal_write");
 
-Rust Embedded HAL works OK for writing an I2C Register!
+    //  Open I2C Port
+    let mut i2c = nuttx_hal::I2c::new(
+        "/dev/i2c0",  //  I2C Port
+        BME280_FREQ,  //  I2C Frequency
+    );
+
+    //  Write 0xA0 to register 0xF5
+    i2c.write(
+        BME280_ADDR as u8,          //  I2C Address
+        &[BME280_REG_CONFIG, 0xA0]  //  Register ID and value
+    ).expect("write register failed");
+```
+
+[(Source)](rust/src/test.rs)
+
+But the Logic Analyser shows that BL602 is writing to I2C the value 0x00 instead of 0xA0...
+
+```text
+Setup Write to [0xEE] + ACK
+0xF5 + ACK
+0x00 + ACK
+```
+
+Let's fix this.
+
+# Fix I2C Write
 
 TODO
