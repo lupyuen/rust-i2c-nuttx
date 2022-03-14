@@ -71,33 +71,47 @@ pub fn test_hal_write() {
         BME280_FREQ,  //  I2C Frequency
     );
 
-    //  Buffer for I2C data
+    //  Buffer for received I2C data
     let mut buf = [0 ; 1];
 
-    //  TODO: Read from register
+    //  Read from register 0xF4
+    i2c.write_read(
+        BME280_ADDR as u8,         //  I2C Address
+        &[BME280_REG_CTRL_MEASL],  //  Register ID
+        &mut buf  //  Buffer to be received
+    ).expect("read register failed");
+    println!("test_hal_write: Register value is 0x{:02x}", buf[0]);
 
-    //  Write to register
+    //  Write 0x2F to register 0xF4
     i2c.write(
         BME280_ADDR as u8,  //  I2C Address
         &[BME280_REG_CTRL_MEASL, 0x2F]
     ).expect("write register failed");
+    println!("test_hal_write: Write 0x2F to register");
 
-    //  Read from register
+    //  Read from register 0xF4
     i2c.write_read(
-        BME280_ADDR as u8,  //  I2C Address
-        &[BME280_REG_CTRL_MEASL],   //  Register ID
-        &mut buf            //  Buffer to be received
+        BME280_ADDR as u8,         //  I2C Address
+        &[BME280_REG_CTRL_MEASL],  //  Register ID
+        &mut buf  //  Buffer to be received
     ).expect("read register failed");
+    println!("test_hal_write: Register value is 0x{:02x}", buf[0]);
+    assert_eq!(buf[0], 0x2F);
 
-    //  Write to register
+    //  Write 0x00 to register 0xF4
     i2c.write(
         BME280_ADDR as u8,  //  I2C Address
         &[BME280_REG_CTRL_MEASL, 0x00]
     ).expect("write register failed");
+    println!("test_hal_write: Write 0x00 to register");
 
-    //  TODO: Read from register
-
-    //  TODO: Register Value must be ???
+    //  Read from register 0xF4
+    i2c.write_read(
+        BME280_ADDR as u8,         //  I2C Address
+        &[BME280_REG_CTRL_MEASL],  //  Register ID
+        &mut buf  //  Buffer to be received
+    ).expect("read register failed");
+    println!("test_hal_write: Register value is 0x{:02x}", buf[0]);
     assert_eq!(buf[0], 0x00);
 
     //  Sleep 5 seconds
@@ -119,7 +133,7 @@ pub fn test_i2c() {
     let mut buf   = [0u8 ; 1];
 
     //  Compose I2C Transfer
-    let msg: [i2c_msg_s ; 2] = [
+    let msg = [
         //  First I2C Message: Send Register ID
         i2c_msg_s {
             frequency: BME280_FREQ,   //  I2C Frequency

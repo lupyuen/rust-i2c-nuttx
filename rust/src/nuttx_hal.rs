@@ -19,7 +19,7 @@ use crate::{
 };
 
 /*
-/// NuttX I2C Read
+/// TODO: NuttX I2C Read
 impl i2c::Read for I2c {
     /// TODO: Error Type
     type Error = ();
@@ -44,7 +44,7 @@ impl i2c::Write for I2c {
         buf2[..buf.len()].copy_from_slice(buf);
 
         //  Compose I2C Transfer
-        let msg: [i2c_msg_s ; 1] = [
+        let msg = [
             //  I2C Message: Write I2C data
             i2c_msg_s {
                 frequency: self.frequency,  //  I2C Frequency
@@ -91,7 +91,7 @@ impl i2c::WriteRead for I2c {
         let mut start = [reg_id ; 1];
 
         //  Compose I2C Transfer
-        let msg: [i2c_msg_s ; 2] = [
+        let msg = [
             //  First I2C Message: Send Register ID
             i2c_msg_s {
                 frequency: self.frequency,  //  I2C Frequency
