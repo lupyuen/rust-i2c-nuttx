@@ -543,8 +543,21 @@ Setup Write to [0xEE] + ACK
 0x00 + ACK
 ```
 
-Let's fix this.
+Let's fix this. 
 
 # Fix I2C Write
+
+Here's the log for the I2C write...
+
+```text
+nsh> rust_i2c
+Hello from Rust!
+test_hal_write
+i2cdrvr_ioctl: cmd=2101 arg=4201c370
+bl602_i2c_transfer: subflag=1, subaddr=0xf5, sublen=1
+bl602_i2c_send_data: count=1, temp=0xa0
+bl602_i2c_transfer: i2c transfer success
+test_hal_write: Write 0xA0 to register
+```
 
 TODO
