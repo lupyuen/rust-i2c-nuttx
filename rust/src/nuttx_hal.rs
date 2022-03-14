@@ -45,6 +45,7 @@ impl i2c::Write for I2c {
         assert!(buf.len() <= buf2.len());
         buf2[..buf.len()].copy_from_slice(buf);
 
+        /*
         //  Compose I2C Transfer
         let msg = [
             //  I2C Message: Write I2C data
@@ -65,8 +66,8 @@ impl i2c::Write for I2c {
                 //  TODO: Check for BL602 specifically (by target_abi?), not just RISC-V 32-bit
             }
         ];
+        */
 
-        /*
         //  Write I2C Registers, starting at Register ID
         let reg_id = buf[0];
         let mut start = [reg_id ; 1];
@@ -94,25 +95,14 @@ impl i2c::Write for I2c {
             i2c_msg_s {
                 frequency: self.frequency,  //  I2C Frequency
                 addr:      addr as u16,     //  I2C Address
-                //buffer:    buf2[1..].as_mut_ptr(),      //  Buffer to be received
-                //length:    (buf.len() - 1) as ssize_t,  //  Length of the buffer in bytes
+                buffer:    buf2[1..].as_mut_ptr(),      //  Buffer to be sent
+                length:    (buf.len() - 1) as ssize_t,  //  Length of the buffer in bytes
 
-                buffer:    start.as_mut_ptr(),      //  Buffer to be sent
-                length:    start.len() as ssize_t,  //  Length of the buffer in bytes
-                //flags:     0,  //  I2C Flags: None (Write to I2C Device)
-
-                //  For BL602: Register ID must be passed as I2C Sub Address
-                #[cfg(target_arch = "riscv32")]  //  If architecture is RISC-V 32-bit...
-                flags:     I2C_M_NOSTOP,  //  I2C Flags: Send I2C Sub Address
-                
-                //  Otherwise pass Register ID as I2C Data
-                #[cfg(not(target_arch = "riscv32"))]  //  If architecture is not RISC-V 32-bit...
-                flags:     0,  //  I2C Flags: None
-
-                //  TODO: Check for BL602 specifically (by target_abi?), not just RISC-V 32-bit
+                //buffer:    start.as_mut_ptr(),      //  Buffer to be sent
+                //length:    start.len() as ssize_t,  //  Length of the buffer in bytes
+                flags:     0,  //  I2C Flags: None (Write to I2C Device)
             },
         ];
-        */
         
         /*
         //  Compose I2C Transfer

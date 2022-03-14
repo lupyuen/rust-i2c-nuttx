@@ -74,6 +74,7 @@ pub fn test_hal_write() {
         BME280_FREQ,  //  I2C Frequency
     );
 
+    /*
     //  Buffer for received I2C data
     let mut buf = [0 ; 1];
 
@@ -98,6 +99,7 @@ pub fn test_hal_write() {
 
     //  Sleep 1 second
     unsafe { sleep(1); }
+    */
 
     //  Write 0xA0 to register 0xF5
     i2c.write(
@@ -106,6 +108,7 @@ pub fn test_hal_write() {
     ).expect("write register failed");
     println!("test_hal_write: Write 0xA0 to register");
 
+    /*
     //  Sleep 1 second
     unsafe { sleep(1); }
 
@@ -142,6 +145,7 @@ pub fn test_hal_write() {
 
     //  Sleep 2 seconds
     unsafe { sleep(2); }
+    */
 }
 
 /// Test the I2C Port by reading an I2C Register through ioctl
