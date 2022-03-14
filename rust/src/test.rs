@@ -21,6 +21,9 @@ const BME280_FREQ: u32 = 400000;
 /// I2C Register that contains the BME280 Device ID
 const BME280_REG_ID: u8 = 0xD0;
 
+/// I2C Register that controls the BME280 Power Mode
+const BME280_REG_CTRL_MEASL: u8 = 0xF4;
+
 /// I2C Register that configures the BME280 Standby Interval
 const BME280_REG_CONFIG: u8 = 0xF5;
 
@@ -57,8 +60,8 @@ pub fn test_hal_read() {
     //  Register Value must be BME280 Device ID (0x60)
     assert_eq!(buf[0], BME280_CHIP_ID);
 
-    //  Sleep 5 seconds
-    unsafe { sleep(5); }
+    //  Sleep 2 seconds
+    unsafe { sleep(2); }
 }
 
 /// Test the I2C HAL by writing an I2C Register
@@ -74,6 +77,17 @@ pub fn test_hal_write() {
     //  Buffer for received I2C data
     let mut buf = [0 ; 1];
 
+    //  Write 0x00 to register 0xF4 to enter Sleep Mode.
+    //  BME280 must be in sleep mode for register 0xF5 to be written correctly.
+    i2c.write(
+        BME280_ADDR as u8,              //  I2C Address
+        &[BME280_REG_CTRL_MEASL, 0x00]  //  Register ID and value
+    ).expect("write register failed");
+    println!("test_hal_write: Enter sleep mode");
+
+    //  Sleep 2 seconds
+    unsafe { sleep(2); }
+        
     //  Read from register 0xF5
     i2c.write_read(
         BME280_ADDR as u8,     //  I2C Address
@@ -82,12 +96,18 @@ pub fn test_hal_write() {
     ).expect("read register failed");
     println!("test_hal_write: Register value is 0x{:02x}", buf[0]);
 
+    //  Sleep 2 seconds
+    unsafe { sleep(2); }
+
     //  Write 0xA0 to register 0xF5
     i2c.write(
-        BME280_ADDR as u8,  //  I2C Address
-        &[BME280_REG_CONFIG, 0xA0]
+        BME280_ADDR as u8,          //  I2C Address
+        &[BME280_REG_CONFIG, 0xA0]  //  Register ID and value
     ).expect("write register failed");
     println!("test_hal_write: Write 0xA0 to register");
+
+    //  Sleep 2 seconds
+    unsafe { sleep(2); }
 
     //  Read from register 0xF5
     i2c.write_read(
@@ -98,12 +118,18 @@ pub fn test_hal_write() {
     println!("test_hal_write: Register value is 0x{:02x}", buf[0]);
     assert_eq!(buf[0], 0xA0);
 
+    //  Sleep 2 seconds
+    unsafe { sleep(2); }
+
     //  Write 0x00 to register 0xF5
     i2c.write(
-        BME280_ADDR as u8,  //  I2C Address
-        &[BME280_REG_CONFIG, 0x00]
+        BME280_ADDR as u8,          //  I2C Address
+        &[BME280_REG_CONFIG, 0x00]  //  Register ID and value
     ).expect("write register failed");
     println!("test_hal_write: Write 0x00 to register");
+
+    //  Sleep 2 seconds
+    unsafe { sleep(2); }
 
     //  Read from register 0xF5
     i2c.write_read(
@@ -114,8 +140,8 @@ pub fn test_hal_write() {
     println!("test_hal_write: Register value is 0x{:02x}", buf[0]);
     assert_eq!(buf[0], 0x00);
 
-    //  Sleep 5 seconds
-    unsafe { sleep(5); }
+    //  Sleep 2 seconds
+    unsafe { sleep(2); }
 }
 
 /// Test the I2C Port by reading an I2C Register through ioctl
@@ -190,6 +216,6 @@ pub fn test_i2c() {
     //  Close the I2C Port
     unsafe { close(i2c); }
 
-    //  Sleep 5 seconds
-    unsafe { sleep(5); }
+    //  Sleep 2 seconds
+    unsafe { sleep(2); }
 }
