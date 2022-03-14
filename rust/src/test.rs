@@ -21,8 +21,8 @@ const BME280_FREQ: u32 = 400000;
 /// I2C Register that contains the BME280 Device ID
 const BME280_REG_ID: u8 = 0xD0;
 
-/// I2C Register that controls the BME280 Power Mode
-const BME280_REG_CTRL_MEASL: u8 = 0xF4;
+/// I2C Register that configures the BME280 Standby Interval
+const BME280_REG_CONFIG: u8 = 0xF5;
 
 /// Device ID of BME280
 const BME280_CHIP_ID: u8 = 0x60;
@@ -74,41 +74,41 @@ pub fn test_hal_write() {
     //  Buffer for received I2C data
     let mut buf = [0 ; 1];
 
-    //  Read from register 0xF4
+    //  Read from register 0xF5
     i2c.write_read(
-        BME280_ADDR as u8,         //  I2C Address
-        &[BME280_REG_CTRL_MEASL],  //  Register ID
+        BME280_ADDR as u8,     //  I2C Address
+        &[BME280_REG_CONFIG],  //  Register ID
         &mut buf  //  Buffer to be received
     ).expect("read register failed");
     println!("test_hal_write: Register value is 0x{:02x}", buf[0]);
 
-    //  Write 0x2F to register 0xF4
+    //  Write 0xA0 to register 0xF5
     i2c.write(
         BME280_ADDR as u8,  //  I2C Address
-        &[BME280_REG_CTRL_MEASL, 0x2F]
+        &[BME280_REG_CONFIG, 0xA0]
     ).expect("write register failed");
-    println!("test_hal_write: Write 0x2F to register");
+    println!("test_hal_write: Write 0xA0 to register");
 
-    //  Read from register 0xF4
+    //  Read from register 0xF5
     i2c.write_read(
-        BME280_ADDR as u8,         //  I2C Address
-        &[BME280_REG_CTRL_MEASL],  //  Register ID
+        BME280_ADDR as u8,     //  I2C Address
+        &[BME280_REG_CONFIG],  //  Register ID
         &mut buf  //  Buffer to be received
     ).expect("read register failed");
     println!("test_hal_write: Register value is 0x{:02x}", buf[0]);
-    assert_eq!(buf[0], 0x2F);
+    assert_eq!(buf[0], 0xA0);
 
-    //  Write 0x00 to register 0xF4
+    //  Write 0x00 to register 0xF5
     i2c.write(
         BME280_ADDR as u8,  //  I2C Address
-        &[BME280_REG_CTRL_MEASL, 0x00]
+        &[BME280_REG_CONFIG, 0x00]
     ).expect("write register failed");
     println!("test_hal_write: Write 0x00 to register");
 
-    //  Read from register 0xF4
+    //  Read from register 0xF5
     i2c.write_read(
-        BME280_ADDR as u8,         //  I2C Address
-        &[BME280_REG_CTRL_MEASL],  //  Register ID
+        BME280_ADDR as u8,     //  I2C Address
+        &[BME280_REG_CONFIG],  //  Register ID
         &mut buf  //  Buffer to be received
     ).expect("read register failed");
     println!("test_hal_write: Register value is 0x{:02x}", buf[0]);
