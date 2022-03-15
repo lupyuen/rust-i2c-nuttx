@@ -127,7 +127,7 @@ impl i2c::Write for I2c {
         ];
         */
 
-        //  /*
+        /*
         //  Compose I2C Transfer
         let msg = [
             //  First I2C Message: Send Register ID
@@ -166,9 +166,9 @@ impl i2c::Write for I2c {
                 length: unsafe { BUF3.len() } as ssize_t,
             },
         ];
-        //  */
+        */
         
-        /*
+        //  /*
         //  Compose I2C Transfer to write I2C Registers
         let msg = [
             //  I2C Message: Write I2C data
@@ -177,10 +177,18 @@ impl i2c::Write for I2c {
                 addr:      addr as u16,     //  I2C Address
                 buffer:    buf2.as_mut_ptr(),     //  Buffer to be sent
                 length:    buf2.len() as ssize_t,  //  Number of bytes to be sent
+                ////flags:     0,  //  I2C Flags: None
+
+                //  For BL602: Register ID must be passed as I2C Sub Address
+                #[cfg(target_arch = "riscv32")]  //  If architecture is RISC-V 32-bit...
+                flags:     I2C_M_NOSTOP,  //  I2C Flags: Send I2C Sub Address
+                
+                //  Otherwise pass Register ID as I2C Data
+                #[cfg(not(target_arch = "riscv32"))]  //  If architecture is not RISC-V 32-bit...
                 flags:     0,  //  I2C Flags: None
             }
         ];
-        */
+        //  */
 
         //  Compose ioctl Argument to write I2C Registers
         let xfer = i2c_transfer_s {
