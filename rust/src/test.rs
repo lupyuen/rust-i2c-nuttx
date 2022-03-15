@@ -74,10 +74,10 @@ pub fn test_hal_write() {
         BME280_FREQ,  //  I2C Frequency
     );
 
-    /*
     //  Buffer for received I2C data
     let mut buf = [0 ; 1];
 
+    /*
     //  Write 0x00 to register 0xF4 to enter Sleep Mode.
     //  BME280 must be in sleep mode for register 0xF5 to be written correctly.
     i2c.write(
@@ -108,7 +108,6 @@ pub fn test_hal_write() {
     ).expect("write register failed");
     println!("test_hal_write: Write 0xA0 to register");
 
-    /*
     //  Sleep 1 second
     unsafe { sleep(1); }
 
@@ -124,6 +123,7 @@ pub fn test_hal_write() {
     //  Sleep 1 second
     unsafe { sleep(1); }
 
+    /*
     //  Write 0x00 to register 0xF5
     i2c.write(
         BME280_ADDR as u8,          //  I2C Address
@@ -200,9 +200,9 @@ pub fn test_i2c() {
     //  Execute I2C Transfer
     let ret = unsafe { 
         ioctl(
-            i2c,
-            I2CIOC_TRANSFER,
-            &xfer
+            i2c,          //  I2C Port
+            I2CIOC_TRANSFER,  //  I2C Transfer
+            &xfer             //  I2C Messages for the transfer
         )
     };
     assert!(ret >= 0);
