@@ -53,7 +53,7 @@ impl i2c::Write for I2c {
         let reg_id = buf[0];
         let mut start = [reg_id ; 1];
 
-        /*
+        //  /*
         //  Compose I2C Transfer to read I2C Registers
         let msg = [
             //  First I2C Message: Send Register ID
@@ -98,7 +98,7 @@ impl i2c::Write for I2c {
             )
         };
         assert!(ret >= 0);   
-        */
+        //  */
 
         /*
         //  Compose I2C Transfer
@@ -168,7 +168,7 @@ impl i2c::Write for I2c {
                 frequency: self.frequency,  //  I2C Frequency
                 addr:      addr as u16,     //  I2C Address
                 buffer:    buf2.as_mut_ptr(),     //  Buffer to be sent
-                length:    buf.len() as ssize_t,  //  Number of bytes to be sent
+                length:    buf2.len() as ssize_t,  //  Number of bytes to be sent
                 flags:     0,  //  I2C Flags: None
             }
         ];
