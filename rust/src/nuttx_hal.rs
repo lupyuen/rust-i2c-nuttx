@@ -45,95 +45,9 @@ impl i2c::Write for I2c {
         assert!(buf.len() <= buf2.len());
         buf2[..buf.len()].copy_from_slice(buf);
 
-        //  Temp buffer for reading I2C Registers
-        let mut rbuf = [0 ; 64];
-        assert!(buf.len() <= rbuf.len());
-
-        //  Read I2C Registers, starting at Register ID
-        let reg_id = buf[0];
-        let mut start = [reg_id ; 1];
-
-        //static mut BUF3: [u8 ; 15] = [0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99, 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF];
-        //static mut BUF3: [u8 ; 8] = [0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88];
-        //static mut BUF3: [u8 ; 4] = [0x11, 0x22, 0x33, 0x44];
-        //static mut BUF4: [u8 ; 4] = [0x55, 0x66, 0x77, 0x88];
-        static mut BUF3: [u8 ; 2] = [0x11, 0x22];
-        //static mut BUF4: [u8 ; 2] = [0x55, 0x66];
-        //static mut BUF3: [u8 ; 1] = [0x11];
+        //  TODO
         static mut BUF4: [u8 ; 1] = [0x55];
-        //static mut BUF5: [u8 ; 1] = [0x99];
 
-        /*
-        //  Compose I2C Transfer to read I2C Registers
-        let msg = [
-            //  First I2C Message: Send Register ID
-            i2c_msg_s {
-                frequency: self.frequency,  //  I2C Frequency
-                addr:      addr as u16,     //  I2C Address
-                buffer:    start.as_mut_ptr(),      //  Buffer to be sent
-                length:    start.len() as ssize_t,  //  Number of bytes to be sent
-
-                //  For BL602: Register ID must be passed as I2C Sub Address
-                #[cfg(target_arch = "riscv32")]  //  If architecture is RISC-V 32-bit...
-                flags:     I2C_M_NOSTOP,  //  I2C Flags: Send I2C Sub Address
-                
-                //  Otherwise pass Register ID as I2C Data
-                #[cfg(not(target_arch = "riscv32"))]  //  If architecture is not RISC-V 32-bit...
-                flags:     0,  //  I2C Flags: None
-
-                //  TODO: Check for BL602 specifically (by target_abi?), not just RISC-V 32-bit
-            },
-            //  Second I2C Message: Receive Register Values
-            i2c_msg_s {
-                frequency: self.frequency,  //  I2C Frequency
-                addr:      addr as u16,     //  I2C Address
-                buffer:    rbuf.as_mut_ptr(),           //  Buffer to be received
-                length:    (buf.len() - 1) as ssize_t,  //  Number of bytes to be received, skip the Register ID
-                flags:     I2C_M_READ,  //  I2C Flags: Read from I2C Device
-            },
-        ];
-
-        //  Compose ioctl Argument to read I2C Registers
-        let xfer = i2c_transfer_s {
-            msgv: msg.as_ptr(),         //  Array of I2C messages for the transfer
-            msgc: msg.len() as size_t,  //  Number of messages in the array
-        };
-
-        //  Execute I2C Transfer to read I2C Registers
-        let ret = unsafe { 
-            ioctl(
-                self.fd,          //  I2C Port
-                I2CIOC_TRANSFER,  //  I2C Transfer
-                &xfer             //  I2C Messages for the transfer
-            )
-        };
-        assert!(ret >= 0);   
-        */
-
-        /*
-        //  Compose I2C Transfer
-        let msg = [
-            //  I2C Message: Write I2C data
-            i2c_msg_s {
-                frequency: self.frequency,  //  I2C Frequency
-                addr:      addr as u16,     //  I2C Address
-                buffer:    buf2.as_mut_ptr(),     //  Buffer to be sent
-                length:    buf.len() as ssize_t,  //  Length of the buffer in bytes
-
-                //  For BL602: Register ID must be passed as I2C Sub Address
-                #[cfg(target_arch = "riscv32")]  //  If architecture is RISC-V 32-bit...
-                flags:     I2C_M_NOSTOP,  //  I2C Flags: Send I2C Sub Address
-                
-                //  Otherwise pass Register ID as I2C Data
-                #[cfg(not(target_arch = "riscv32"))]  //  If architecture is not RISC-V 32-bit...
-                flags:     0,  //  I2C Flags: None
-
-                //  TODO: Check for BL602 specifically (by target_abi?), not just RISC-V 32-bit
-            }
-        ];
-        */
-
-        //  /*
         //  Compose I2C Transfer
         let msg = [
             //  First I2C Message: Send Register ID and I2C Data as I2C Sub Address
@@ -172,63 +86,8 @@ impl i2c::Write for I2c {
 
                 //  TODO: Check for BL602 specifically (by target_abi?), not just RISC-V 32-bit
             },
-            /*
-            //  Third I2C Message: Send I2C Data
-            i2c_msg_s {
-                frequency: self.frequency,  //  I2C Frequency
-                addr:      addr as u16,     //  I2C Address
-                flags:     0,  //  I2C Flags: None
-
-                buffer: unsafe { BUF5.as_mut_ptr() },
-                length: unsafe { BUF5.len() } as ssize_t,
-
-                //buffer:    buf2.as_mut_ptr(),     //  Buffer to be sent
-                //length:    buf.len() as ssize_t,  //  Number of bytes to send
-
-                //buffer:    buf2[1..].as_mut_ptr(),      //  Buffer to be sent
-                //length:    (buf.len() - 1) as ssize_t,  //  Number of bytes to send
-            },
-            */
-            /*
-            //  Second I2C Message: Send I2C Data
-            i2c_msg_s {
-                frequency: self.frequency,  //  I2C Frequency
-                addr:      addr as u16,     //  I2C Address
-                flags:     0,  //  I2C Flags: None (Write to I2C Device)
-
-                //buffer:    buf2[1..].as_mut_ptr(),      //  Buffer to be sent
-                //length:    (buf.len() - 1) as ssize_t,  //  Number of bytes to send
-
-                //buffer:    start.as_mut_ptr(),      //  Buffer to be sent
-                //length:    start.len() as ssize_t,  //  Number of bytes to send
-
-                //buffer:    buf2.as_mut_ptr(),      //  Buffer to be sent
-                //length:    buf2.len() as ssize_t,  //  Number of bytes to send
-
-                //buffer: unsafe { BUF3.as_mut_ptr() },
-                //length: unsafe { BUF3.len() } as ssize_t,
-
-                buffer: unsafe { BUF3.as_mut_ptr() },
-                length: 1,
-            },
-            */
         ];
-        //  */
         
-        /*
-        //  Compose I2C Transfer to write I2C Registers
-        let msg = [
-            //  I2C Message: Write I2C data
-            i2c_msg_s {
-                frequency: self.frequency,  //  I2C Frequency
-                addr:      addr as u16,     //  I2C Address
-                buffer:    buf2.as_mut_ptr(),     //  Buffer to be sent
-                length:    buf.len() as ssize_t,  //  Number of bytes to be sent
-                flags:     0,  //  I2C Flags: None
-            }
-        ];
-        */
-
         //  Compose ioctl Argument to write I2C Registers
         let xfer = i2c_transfer_s {
             msgv: msg.as_ptr(),         //  Array of I2C messages for the transfer
