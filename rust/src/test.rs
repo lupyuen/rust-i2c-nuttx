@@ -108,6 +108,16 @@ pub fn test_hal_write() {
     ).expect("write register failed");
     println!("test_hal_write: Write 0xA0 to register");
 
+    //  Sleep 1 second
+    unsafe { sleep(1); }
+
+    //  Write 0xA0 to register 0xF5
+    i2c.write(
+        BME280_ADDR as u8,          //  I2C Address
+        &[BME280_REG_CONFIG, 0xA0]  //  Register ID and value
+    ).expect("write register failed");
+    println!("test_hal_write: Write 0xA0 to register");
+
     /*
     //  Sleep 1 second
     unsafe { sleep(1); }
