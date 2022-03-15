@@ -131,15 +131,16 @@ impl i2c::Write for I2c {
         //  /*
         //  Compose I2C Transfer
         let msg = [
-            //  First I2C Message: Send Register ID
+            //  First I2C Message: Send Register ID as I2C Sub Address
             i2c_msg_s {
                 frequency: self.frequency,  //  I2C Frequency
                 addr:      addr as u16,     //  I2C Address
-                buffer:    start.as_mut_ptr(),      //  Buffer to be sent
-                length:    start.len() as ssize_t,  //  Number of bytes to send
 
-                //buffer: unsafe { BUF4.as_mut_ptr() },
-                //length: unsafe { BUF4.len() } as ssize_t,
+                //buffer:    start.as_mut_ptr(),      //  Buffer to be sent
+                //length:    start.len() as ssize_t,  //  Number of bytes to send
+
+                buffer: unsafe { BUF3.as_mut_ptr() },
+                length: unsafe { BUF3.len() } as ssize_t,
 
                 //buffer:    buf2.as_mut_ptr(),     //  Buffer to be sent
                 //length:    buf.len() as ssize_t,  //  Number of bytes to send
@@ -154,22 +155,19 @@ impl i2c::Write for I2c {
 
                 //  TODO: Check for BL602 specifically (by target_abi?), not just RISC-V 32-bit
             },
-            //  Second I2C Message: Send I2C Data
+            //  Second I2C Message: Send I2C Data as I2C Sub Address
             i2c_msg_s {
                 frequency: self.frequency,  //  I2C Frequency
                 addr:      addr as u16,     //  I2C Address
 
-                //buffer:    start.as_mut_ptr(),      //  Buffer to be sent
-                //length:    start.len() as ssize_t,  //  Number of bytes to send
-
-                //buffer: unsafe { BUF4.as_mut_ptr() },
-                //length: unsafe { BUF4.len() } as ssize_t,
+                buffer: unsafe { BUF4.as_mut_ptr() },
+                length: unsafe { BUF4.len() } as ssize_t,
 
                 //buffer:    buf2.as_mut_ptr(),     //  Buffer to be sent
                 //length:    buf.len() as ssize_t,  //  Number of bytes to send
 
-                buffer:    buf2[1..].as_mut_ptr(),      //  Buffer to be sent
-                length:    (buf.len() - 1) as ssize_t,  //  Number of bytes to send
+                //buffer:    buf2[1..].as_mut_ptr(),      //  Buffer to be sent
+                //length:    (buf.len() - 1) as ssize_t,  //  Number of bytes to send
 
                 //  For BL602: Register ID must be passed as I2C Sub Address
                 #[cfg(target_arch = "riscv32")]  //  If architecture is RISC-V 32-bit...
