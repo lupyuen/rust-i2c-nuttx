@@ -135,11 +135,14 @@ impl i2c::Write for I2c {
             i2c_msg_s {
                 frequency: self.frequency,  //  I2C Frequency
                 addr:      addr as u16,     //  I2C Address
-                buffer:    start.as_mut_ptr(),      //  Buffer to be sent
-                length:    start.len() as ssize_t,  //  Length of the buffer in bytes
+                //buffer:    start.as_mut_ptr(),      //  Buffer to be sent
+                //length:    start.len() as ssize_t,  //  Number of bytes to send
 
                 //buffer: unsafe { BUF4.as_mut_ptr() },
                 //length: unsafe { BUF4.len() } as ssize_t,
+
+                buffer:    buf2.as_mut_ptr(),     //  Buffer to be sent
+                length:    buf.len() as ssize_t,  //  Number of bytes to send
 
                 //  For BL602: Register ID must be passed as I2C Sub Address
                 #[cfg(target_arch = "riscv32")]  //  If architecture is RISC-V 32-bit...
@@ -158,13 +161,13 @@ impl i2c::Write for I2c {
                 flags:     0,  //  I2C Flags: None (Write to I2C Device)
 
                 //buffer:    buf2[1..].as_mut_ptr(),      //  Buffer to be sent
-                //length:    (buf.len() - 1) as ssize_t,  //  Length of the buffer in bytes
+                //length:    (buf.len() - 1) as ssize_t,  //  Number of bytes to send
 
                 //buffer:    start.as_mut_ptr(),      //  Buffer to be sent
-                //length:    start.len() as ssize_t,  //  Length of the buffer in bytes
+                //length:    start.len() as ssize_t,  //  Number of bytes to send
 
-                //buffer:    buf2.as_mut_ptr(),     //  Buffer to be sent
-                //length:    buf2.len() as ssize_t,  //  Length of the buffer in bytes
+                //buffer:    buf2.as_mut_ptr(),      //  Buffer to be sent
+                //length:    buf2.len() as ssize_t,  //  Number of bytes to send
 
                 buffer: unsafe { BUF3.as_mut_ptr() },
                 length: unsafe { BUF3.len() } as ssize_t,
@@ -231,7 +234,7 @@ impl i2c::WriteRead for I2c {
                 frequency: self.frequency,  //  I2C Frequency
                 addr:      addr as u16,     //  I2C Address
                 buffer:    start.as_mut_ptr(),      //  Buffer to be sent
-                length:    start.len() as ssize_t,  //  Number of bytes to be sent
+                length:    start.len() as ssize_t,  //  Number of bytes to send
 
                 //  For BL602: Register ID must be passed as I2C Sub Address
                 #[cfg(target_arch = "riscv32")]  //  If architecture is RISC-V 32-bit...
@@ -248,7 +251,7 @@ impl i2c::WriteRead for I2c {
                 frequency: self.frequency,  //  I2C Frequency
                 addr:      addr as u16,     //  I2C Address
                 buffer:    rbuf.as_mut_ptr(),      //  Buffer to be received
-                length:    rbuf.len() as ssize_t,  //  Number of bytes to be received
+                length:    rbuf.len() as ssize_t,  //  Number of bytes to receive
                 flags:     I2C_M_READ,  //  I2C Flags: Read from I2C Device
             },
         ];

@@ -169,7 +169,7 @@ pub fn test_i2c() {
             frequency: BME280_FREQ,   //  I2C Frequency
             addr:      BME280_ADDR,   //  I2C Address
             buffer:    start.as_mut_ptr(),      //  Buffer to be sent
-            length:    start.len() as ssize_t,  //  Length of the buffer in bytes
+            length:    start.len() as ssize_t,  //  Number of bytes to send
 
             //  For BL602: Register ID must be passed as I2C Sub Address
             #[cfg(target_arch = "riscv32")]  //  If architecture is RISC-V 32-bit...
@@ -186,7 +186,7 @@ pub fn test_i2c() {
             frequency: BME280_FREQ,  //  I2C Frequency
             addr:      BME280_ADDR,  //  I2C Address
             buffer:    buf.as_mut_ptr(),      //  Buffer to be received
-            length:    buf.len() as ssize_t,  //  Length of the buffer in bytes
+            length:    buf.len() as ssize_t,  // Number of bytes to receive
             flags:     I2C_M_READ,   //  I2C Flags: Read from I2C Device
         },
     ];
