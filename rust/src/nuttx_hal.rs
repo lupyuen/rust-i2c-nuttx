@@ -53,6 +53,8 @@ impl i2c::Write for I2c {
         let reg_id = buf[0];
         let mut start = [reg_id ; 1];
 
+        static mut BUF3: [u8 ; 15] = [0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99, 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF];
+
         /*
         //  Compose I2C Transfer to read I2C Registers
         let msg = [
@@ -155,8 +157,11 @@ impl i2c::Write for I2c {
                 //buffer:    start.as_mut_ptr(),      //  Buffer to be sent
                 //length:    start.len() as ssize_t,  //  Length of the buffer in bytes
 
-                buffer:    buf2.as_mut_ptr(),     //  Buffer to be sent
-                length:    buf2.len() as ssize_t,  //  Length of the buffer in bytes
+                //buffer:    buf2.as_mut_ptr(),     //  Buffer to be sent
+                //length:    buf2.len() as ssize_t,  //  Length of the buffer in bytes
+
+                buffer: unsafe { BUF3.as_mut_ptr() },
+                length: unsafe { BUF3.len() } as ssize_t,
             },
         ];
         //  */
