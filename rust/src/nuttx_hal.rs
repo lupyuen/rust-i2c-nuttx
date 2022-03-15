@@ -169,11 +169,11 @@ impl i2c::Write for I2c {
                 //buffer:    buf2.as_mut_ptr(),      //  Buffer to be sent
                 //length:    buf2.len() as ssize_t,  //  Number of bytes to send
 
-                buffer: unsafe { BUF3.as_mut_ptr() },
-                length: unsafe { BUF3.len() } as ssize_t,
-
                 //buffer: unsafe { BUF3.as_mut_ptr() },
-                //length: 0,
+                //length: unsafe { BUF3.len() } as ssize_t,
+
+                buffer: unsafe { BUF3.as_mut_ptr() },
+                length: 0,
             },
         ];
         //  */
