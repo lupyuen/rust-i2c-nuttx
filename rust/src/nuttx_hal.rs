@@ -56,6 +56,7 @@ impl i2c::Write for I2c {
         //static mut BUF3: [u8 ; 15] = [0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99, 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF];
         //static mut BUF3: [u8 ; 8] = [0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88];
         static mut BUF3: [u8 ; 4] = [0x11, 0x22, 0x33, 0x44];
+        static mut BUF4: [u8 ; 4] = [0x55, 0x66, 0x77, 0x88];
 
         /*
         //  Compose I2C Transfer to read I2C Registers
@@ -127,7 +128,7 @@ impl i2c::Write for I2c {
         ];
         */
 
-        /*
+        //  /*
         //  Compose I2C Transfer
         let msg = [
             //  First I2C Message: Send Register ID
@@ -136,6 +137,9 @@ impl i2c::Write for I2c {
                 addr:      addr as u16,     //  I2C Address
                 buffer:    start.as_mut_ptr(),      //  Buffer to be sent
                 length:    start.len() as ssize_t,  //  Length of the buffer in bytes
+
+                //buffer: unsafe { BUF4.as_mut_ptr() },
+                //length: unsafe { BUF4.len() } as ssize_t,
 
                 //  For BL602: Register ID must be passed as I2C Sub Address
                 #[cfg(target_arch = "riscv32")]  //  If architecture is RISC-V 32-bit...
@@ -164,11 +168,14 @@ impl i2c::Write for I2c {
 
                 buffer: unsafe { BUF3.as_mut_ptr() },
                 length: unsafe { BUF3.len() } as ssize_t,
+
+                //buffer: unsafe { BUF3.as_mut_ptr() },
+                //length: 0,
             },
         ];
-        */
+        //  */
         
-        //  /*
+        /*
         //  Compose I2C Transfer to write I2C Registers
         let msg = [
             //  I2C Message: Write I2C data
@@ -177,18 +184,10 @@ impl i2c::Write for I2c {
                 addr:      addr as u16,     //  I2C Address
                 buffer:    buf2.as_mut_ptr(),     //  Buffer to be sent
                 length:    buf.len() as ssize_t,  //  Number of bytes to be sent
-                ////flags:     0,  //  I2C Flags: None
-
-                //  For BL602: Register ID must be passed as I2C Sub Address
-                #[cfg(target_arch = "riscv32")]  //  If architecture is RISC-V 32-bit...
-                flags:     I2C_M_NOSTOP,  //  I2C Flags: Send I2C Sub Address
-                
-                //  Otherwise pass Register ID as I2C Data
-                #[cfg(not(target_arch = "riscv32"))]  //  If architecture is not RISC-V 32-bit...
                 flags:     0,  //  I2C Flags: None
             }
         ];
-        //  */
+        */
 
         //  Compose ioctl Argument to write I2C Registers
         let xfer = i2c_transfer_s {
