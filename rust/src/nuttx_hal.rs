@@ -165,8 +165,8 @@ impl i2c::Write for I2c {
             i2c_msg_s {
                 frequency: self.frequency,  //  I2C Frequency
                 addr:      addr as u16,     //  I2C Address
-                buffer:    buf2[1..].as_mut_ptr(),      //  Buffer to be sent, skip the Register ID
-                length:    (buf.len() - 1) as ssize_t,  //  Number of bytes to be sent, skip the Register ID
+                buffer:    buf2.as_mut_ptr(),     //  Buffer to be sent
+                length:    buf.len() as ssize_t,  //  Number of bytes to be sent
                 flags:     0,  //  I2C Flags: None
             }
         ];
