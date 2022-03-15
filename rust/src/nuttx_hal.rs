@@ -131,7 +131,7 @@ impl i2c::Write for I2c {
         //  /*
         //  Compose I2C Transfer
         let msg = [
-            //  First I2C Message: Send Register ID
+            //  First I2C Message: Send Register ID and Data
             i2c_msg_s {
                 frequency: self.frequency,  //  I2C Frequency
                 addr:      addr as u16,     //  I2C Address
@@ -154,6 +154,30 @@ impl i2c::Write for I2c {
 
                 //  TODO: Check for BL602 specifically (by target_abi?), not just RISC-V 32-bit
             },
+            //  Second I2C Message: Send Register ID and Data
+            i2c_msg_s {
+                frequency: self.frequency,  //  I2C Frequency
+                addr:      addr as u16,     //  I2C Address
+                //buffer:    start.as_mut_ptr(),      //  Buffer to be sent
+                //length:    start.len() as ssize_t,  //  Number of bytes to send
+
+                //buffer: unsafe { BUF4.as_mut_ptr() },
+                //length: unsafe { BUF4.len() } as ssize_t,
+
+                buffer:    buf2.as_mut_ptr(),     //  Buffer to be sent
+                length:    buf.len() as ssize_t,  //  Number of bytes to send
+
+                //  For BL602: Register ID must be passed as I2C Sub Address
+                #[cfg(target_arch = "riscv32")]  //  If architecture is RISC-V 32-bit...
+                flags:     I2C_M_NOSTOP,  //  I2C Flags: Send I2C Sub Address
+                
+                //  Otherwise pass Register ID as I2C Data
+                #[cfg(not(target_arch = "riscv32"))]  //  If architecture is not RISC-V 32-bit...
+                flags:     0,  //  I2C Flags: None
+
+                //  TODO: Check for BL602 specifically (by target_abi?), not just RISC-V 32-bit
+            },
+            /*
             //  Second I2C Message: Send I2C Data
             i2c_msg_s {
                 frequency: self.frequency,  //  I2C Frequency
@@ -173,8 +197,9 @@ impl i2c::Write for I2c {
                 //length: unsafe { BUF3.len() } as ssize_t,
 
                 buffer: unsafe { BUF3.as_mut_ptr() },
-                length: 0,
+                length: 1,
             },
+            */
         ];
         //  */
         
