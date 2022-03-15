@@ -95,12 +95,16 @@ impl i2c::Write for I2c {
             i2c_msg_s {
                 frequency: self.frequency,  //  I2C Frequency
                 addr:      addr as u16,     //  I2C Address
-                buffer:    buf2[1..].as_mut_ptr(),      //  Buffer to be sent
-                length:    (buf.len() - 1) as ssize_t,  //  Length of the buffer in bytes
+                flags:     0,  //  I2C Flags: None (Write to I2C Device)
+
+                //buffer:    buf2[1..].as_mut_ptr(),      //  Buffer to be sent
+                //length:    (buf.len() - 1) as ssize_t,  //  Length of the buffer in bytes
 
                 //buffer:    start.as_mut_ptr(),      //  Buffer to be sent
                 //length:    start.len() as ssize_t,  //  Length of the buffer in bytes
-                flags:     0,  //  I2C Flags: None (Write to I2C Device)
+
+                buffer:    buf2.as_mut_ptr(),     //  Buffer to be sent
+                length:    buf.len() as ssize_t,  //  Length of the buffer in bytes
             },
         ];
         
