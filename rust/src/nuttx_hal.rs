@@ -61,6 +61,7 @@ impl i2c::Write for I2c {
         //static mut BUF4: [u8 ; 2] = [0x55, 0x66];
         static mut BUF3: [u8 ; 1] = [0x11];
         static mut BUF4: [u8 ; 1] = [0x55];
+        static mut BUF5: [u8 ; 1] = [0x99];
 
         /*
         //  Compose I2C Transfer to read I2C Registers
@@ -166,6 +167,30 @@ impl i2c::Write for I2c {
 
                 buffer: unsafe { BUF4.as_mut_ptr() },
                 length: unsafe { BUF4.len() } as ssize_t,
+
+                //buffer:    buf2.as_mut_ptr(),     //  Buffer to be sent
+                //length:    buf.len() as ssize_t,  //  Number of bytes to send
+
+                //buffer:    buf2[1..].as_mut_ptr(),      //  Buffer to be sent
+                //length:    (buf.len() - 1) as ssize_t,  //  Number of bytes to send
+
+                //  For BL602: Register ID must be passed as I2C Sub Address
+                #[cfg(target_arch = "riscv32")]  //  If architecture is RISC-V 32-bit...
+                flags:     I2C_M_NOSTOP,  //  I2C Flags: Send I2C Sub Address
+                
+                //  Otherwise pass Register ID as I2C Data
+                #[cfg(not(target_arch = "riscv32"))]  //  If architecture is not RISC-V 32-bit...
+                flags:     0,  //  I2C Flags: None
+
+                //  TODO: Check for BL602 specifically (by target_abi?), not just RISC-V 32-bit
+            },
+            //  Third I2C Message: Send I2C Data as I2C Sub Address
+            i2c_msg_s {
+                frequency: self.frequency,  //  I2C Frequency
+                addr:      addr as u16,     //  I2C Address
+
+                buffer: unsafe { BUF5.as_mut_ptr() },
+                length: unsafe { BUF5.len() } as ssize_t,
 
                 //buffer:    buf2.as_mut_ptr(),     //  Buffer to be sent
                 //length:    buf.len() as ssize_t,  //  Number of bytes to send
