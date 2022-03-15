@@ -57,11 +57,11 @@ impl i2c::Write for I2c {
         //static mut BUF3: [u8 ; 8] = [0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88];
         //static mut BUF3: [u8 ; 4] = [0x11, 0x22, 0x33, 0x44];
         //static mut BUF4: [u8 ; 4] = [0x55, 0x66, 0x77, 0x88];
-        //static mut BUF3: [u8 ; 2] = [0x11, 0x22];
+        static mut BUF3: [u8 ; 2] = [0x11, 0x22];
         //static mut BUF4: [u8 ; 2] = [0x55, 0x66];
-        static mut BUF3: [u8 ; 1] = [0x11];
+        //static mut BUF3: [u8 ; 1] = [0x11];
         static mut BUF4: [u8 ; 1] = [0x55];
-        static mut BUF5: [u8 ; 1] = [0x99];
+        //static mut BUF5: [u8 ; 1] = [0x99];
 
         /*
         //  Compose I2C Transfer to read I2C Registers
@@ -184,6 +184,7 @@ impl i2c::Write for I2c {
 
                 //  TODO: Check for BL602 specifically (by target_abi?), not just RISC-V 32-bit
             },
+            /*
             //  Third I2C Message: Send I2C Data
             i2c_msg_s {
                 frequency: self.frequency,  //  I2C Frequency
@@ -199,6 +200,7 @@ impl i2c::Write for I2c {
                 //buffer:    buf2[1..].as_mut_ptr(),      //  Buffer to be sent
                 //length:    (buf.len() - 1) as ssize_t,  //  Number of bytes to send
             },
+            */
             /*
             //  Second I2C Message: Send I2C Data
             i2c_msg_s {
