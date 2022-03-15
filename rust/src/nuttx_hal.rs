@@ -49,11 +49,11 @@ impl i2c::Write for I2c {
         let mut rbuf = [0 ; 64];
         assert!(buf.len() <= rbuf.len());
 
-        //  Write I2C Registers, starting at Register ID
+        //  Read I2C Registers, starting at Register ID
         let reg_id = buf[0];
         let mut start = [reg_id ; 1];
 
-        //  Compose I2C Transfer
+        //  Compose I2C Transfer to read I2C Registers
         let msg = [
             //  First I2C Message: Send Register ID
             i2c_msg_s {
@@ -72,23 +72,23 @@ impl i2c::Write for I2c {
 
                 //  TODO: Check for BL602 specifically (by target_abi?), not just RISC-V 32-bit
             },
-            //  Second I2C Message: Receive Register Value
+            //  Second I2C Message: Receive Register Values
             i2c_msg_s {
                 frequency: self.frequency,  //  I2C Frequency
                 addr:      addr as u16,     //  I2C Address
                 buffer:    rbuf.as_mut_ptr(),      //  Buffer to be received
-                length:    rbuf.len() as ssize_t,  //  Length of the buffer in bytes
+                length:    buf.len() as ssize_t,  //  Length of the buffer in bytes
                 flags:     I2C_M_READ,  //  I2C Flags: Read from I2C Device
             },
         ];
 
-        //  Compose ioctl Argument
+        //  Compose ioctl Argument to read I2C Registers
         let xfer = i2c_transfer_s {
             msgv: msg.as_ptr(),         //  Array of I2C messages for the transfer
             msgc: msg.len() as size_t,  //  Number of messages in the array
         };
 
-        //  Execute I2C Transfer
+        //  Execute I2C Transfer to read I2C Registers
         let ret = unsafe { 
             ioctl(
                 self.fd,
@@ -159,8 +159,7 @@ impl i2c::Write for I2c {
         ];
         */
         
-        //  /*
-        //  Compose I2C Transfer
+        //  Compose I2C Transfer to write I2C Registers
         let msg = [
             //  I2C Message: Write I2C data
             i2c_msg_s {
@@ -171,15 +170,14 @@ impl i2c::Write for I2c {
                 flags:     0,  //  I2C Flags: None
             }
         ];
-        //  */
 
-        //  Compose ioctl Argument
+        //  Compose ioctl Argument to write I2C Registers
         let xfer = i2c_transfer_s {
             msgv: msg.as_ptr(),         //  Array of I2C messages for the transfer
             msgc: msg.len() as size_t,  //  Number of messages in the array
         };
 
-        //  Execute I2C Transfer
+        //  Execute I2C Transfer to write I2C Registers
         let ret = unsafe { 
             ioctl(
                 self.fd,
@@ -227,7 +225,7 @@ impl i2c::WriteRead for I2c {
 
                 //  TODO: Check for BL602 specifically (by target_abi?), not just RISC-V 32-bit
             },
-            //  Second I2C Message: Receive Register Value
+            //  Second I2C Message: Receive Register Values
             i2c_msg_s {
                 frequency: self.frequency,  //  I2C Frequency
                 addr:      addr as u16,     //  I2C Address
