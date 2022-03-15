@@ -560,4 +560,8 @@ bl602_i2c_transfer: i2c transfer success
 test_hal_write: Write 0xA0 to register
 ```
 
+BL602 has a peculiar I2C Port that uses I2C Sub Addresses ... Let's make it work with Rust Embedded HAL
+
+https://lupyuen.github.io/articles/bme280#set-i2c-sub-address
+
 TODO
