@@ -108,7 +108,6 @@ pub fn test_hal_write() {
     ).expect("write register failed");
     println!("test_hal_write: Write 0xA0 to register");
 
-    /*
     //  Sleep 1 second
     unsafe { sleep(1); }
 
@@ -121,6 +120,7 @@ pub fn test_hal_write() {
     println!("test_hal_write: Register value is 0x{:02x}", buf[0]);
     assert_eq!(buf[0], 0xA0);
 
+    /*
     //  Sleep 1 second
     unsafe { sleep(1); }
 
