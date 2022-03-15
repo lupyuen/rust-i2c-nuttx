@@ -45,6 +45,59 @@ impl i2c::Write for I2c {
         assert!(buf.len() <= buf2.len());
         buf2[..buf.len()].copy_from_slice(buf);
 
+        //  Temp buffer for reading I2C Registers
+        let mut rbuf = [0 ; 64];
+        assert!(buf.len() <= rbuf.len());
+
+        //  Write I2C Registers, starting at Register ID
+        let reg_id = buf[0];
+        let mut start = [reg_id ; 1];
+
+        //  Compose I2C Transfer
+        let msg = [
+            //  First I2C Message: Send Register ID
+            i2c_msg_s {
+                frequency: self.frequency,  //  I2C Frequency
+                addr:      addr as u16,     //  I2C Address
+                buffer:    start.as_mut_ptr(),      //  Buffer to be sent
+                length:    start.len() as ssize_t,  //  Length of the buffer in bytes
+
+                //  For BL602: Register ID must be passed as I2C Sub Address
+                #[cfg(target_arch = "riscv32")]  //  If architecture is RISC-V 32-bit...
+                flags:     I2C_M_NOSTOP,  //  I2C Flags: Send I2C Sub Address
+                
+                //  Otherwise pass Register ID as I2C Data
+                #[cfg(not(target_arch = "riscv32"))]  //  If architecture is not RISC-V 32-bit...
+                flags:     0,  //  I2C Flags: None
+
+                //  TODO: Check for BL602 specifically (by target_abi?), not just RISC-V 32-bit
+            },
+            //  Second I2C Message: Receive Register Value
+            i2c_msg_s {
+                frequency: self.frequency,  //  I2C Frequency
+                addr:      addr as u16,     //  I2C Address
+                buffer:    rbuf.as_mut_ptr(),      //  Buffer to be received
+                length:    rbuf.len() as ssize_t,  //  Length of the buffer in bytes
+                flags:     I2C_M_READ,  //  I2C Flags: Read from I2C Device
+            },
+        ];
+
+        //  Compose ioctl Argument
+        let xfer = i2c_transfer_s {
+            msgv: msg.as_ptr(),         //  Array of I2C messages for the transfer
+            msgc: msg.len() as size_t,  //  Number of messages in the array
+        };
+
+        //  Execute I2C Transfer
+        let ret = unsafe { 
+            ioctl(
+                self.fd,
+                I2CIOC_TRANSFER,
+                &xfer
+            )
+        };
+        assert!(ret >= 0);   
+
         /*
         //  Compose I2C Transfer
         let msg = [
@@ -68,10 +121,7 @@ impl i2c::Write for I2c {
         ];
         */
 
-        //  Write I2C Registers, starting at Register ID
-        let reg_id = buf[0];
-        let mut start = [reg_id ; 1];
-
+        /*
         //  Compose I2C Transfer
         let msg = [
             //  First I2C Message: Send Register ID
@@ -107,8 +157,9 @@ impl i2c::Write for I2c {
                 length:    buf.len() as ssize_t,  //  Length of the buffer in bytes
             },
         ];
+        */
         
-        /*
+        //  /*
         //  Compose I2C Transfer
         let msg = [
             //  I2C Message: Write I2C data
@@ -120,7 +171,7 @@ impl i2c::Write for I2c {
                 flags:     0,  //  I2C Flags: None
             }
         ];
-        */
+        //  */
 
         //  Compose ioctl Argument
         let xfer = i2c_transfer_s {
