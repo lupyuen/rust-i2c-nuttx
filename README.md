@@ -543,6 +543,8 @@ Setup Write to [0xEE] + ACK
 0x00 + ACK
 ```
 
+![](https://lupyuen.github.io/images/rusti2c-logic1.png)
+
 Let's fix this. Here's the log for the I2C write...
 
 ```text
@@ -613,7 +615,19 @@ We tried all sequences of I2C Read / Write / Sub Address. Only this strange sequ
 
 [(Source)](rust/src/nuttx_hal.rs)
 
-After fixing, the I2C write works!
+After fixing, the Logic Analyser shows that BL602 writes correctly to the I2C Register! (With a harmless I2C Read at the end)
+
+```text
+Setup Write to [0xEE] + ACK
+0xF5 + ACK
+0xA0 + ACK
+Setup Read to [0xEF] + ACK
+0xA0 + NAK
+```
+
+![](https://lupyuen.github.io/images/rusti2c-logic3a.png)
+
+Here's the log...
 
 ```text
 nsh> rust_i2c
@@ -642,6 +656,31 @@ test_hal_write: Register value is 0x00
 Done!
 nsh>
 ```
+
+_What if we write to the I2C Register without reading?_
+
+The I2C Write gets truncated...
+
+```text
+Setup Write to [0x02] + NAK
+```
+
+![](https://lupyuen.github.io/images/rusti2c-noread.png)
+
+_What if we send the Register ID and Register Value as I2C Data instead of I2C Sub Address? (i.e. flags = 0)_
+
+The I2C Write gets zeroed...
+
+```text
+Setup Write to [0xEE] + ACK
+0x00 + ACK
+0x00 + ACK
+(...600 microseconds later...)
+Setup Read to [0xEF] + ACK
+0x00 + NAK
+```
+
+![](https://lupyuen.github.io/images/rusti2c-nosubaddr.png)
 
 # Rust Embedded Driver for BME280
 

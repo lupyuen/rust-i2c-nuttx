@@ -62,6 +62,7 @@ pub fn test_hal_read() {
 
     //  Sleep 2 seconds
     unsafe { sleep(2); }
+    println!("");
 }
 
 /// Test the I2C HAL by writing an I2C Register
@@ -124,6 +125,7 @@ pub fn test_hal_write() {
 
     //  Sleep 2 seconds
     unsafe { sleep(2); }
+    println!("");
 }
 
 /// Test the I2C Port by reading an I2C Register through ioctl
@@ -200,4 +202,5 @@ pub fn test_i2c() {
 
     //  Sleep 2 seconds
     unsafe { sleep(2); }
+    println!("");
 }
