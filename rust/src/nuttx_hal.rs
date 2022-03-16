@@ -79,11 +79,11 @@ impl i2c::Write for I2c {
 
                 //  TODO: Check for BL602 specifically (by target_abi?), not just RISC-V 32-bit
             },
-            //  Second I2C Message: Send I2C Data
+            //  Second I2C Message
             i2c_msg_s {
                 frequency: self.frequency,  //  I2C Frequency
                 addr:      addr as u16,     //  I2C Address
-                //flags:     0,               //  I2C Flags: Send I2C Data
+                flags:     0,               //  I2C Flags: Send I2C Data
 
                 //buffer:    buf2[1..].as_mut_ptr(),      //  Buffer to be sent, skipping Register ID
                 //length:    (buf.len() - 1) as ssize_t,  //  Number of bytes to send, skipping Register ID
@@ -91,6 +91,7 @@ impl i2c::Write for I2c {
                 buffer: unsafe { BUF5.as_mut_ptr() },
                 length: unsafe { BUF5.len() } as ssize_t,
 
+                /*
                 //  For BL602: Register ID must be passed as I2C Sub Address
                 #[cfg(target_arch = "riscv32")]  //  If architecture is RISC-V 32-bit...
                 flags:     I2C_M_NOSTOP,  //  I2C Flags: Send I2C Sub Address
@@ -100,8 +101,9 @@ impl i2c::Write for I2c {
                 flags:     0,  //  I2C Flags: None
 
                 //  TODO: Check for BL602 specifically (by target_abi?), not just RISC-V 32-bit
+                */
             },
-            //  Third I2C Message: Send I2C Data
+            //  Third I2C Message
             i2c_msg_s {
                 frequency: self.frequency,  //  I2C Frequency
                 addr:      addr as u16,     //  I2C Address
