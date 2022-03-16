@@ -688,6 +688,15 @@ Now that our Rust Embedded HAL is working on NuttX, let's test the Rust Embedded
 
 https://crates.io/crates/bme280
 
+We add the BME280 Driver to [Cargo.toml](rust/Cargo.toml)...
+
+```text
+# External Rust libraries used by this module.  See crates.io.
+[dependencies]
+...
+bme280 = "0.2.1"  # BME280 Driver: https://crates.io/crates/bme280
+```
+
 Here's how we read the Temperature, Humidity and Pressure from the BME280 Driver...
 
 ```rust
