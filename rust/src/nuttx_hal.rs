@@ -18,18 +18,17 @@ use crate::{
     String,
 };
 
-/*
-/// TODO: NuttX I2C Read
+/// NuttX I2C Read
 impl i2c::Read for I2c {
     /// TODO: Error Type
     type Error = ();
 
     /// TODO: Read `buf` from I2C Port
-    fn read(&mut self, addr: u8, buf: &mut [u8]) -> Result<(), Self::Error> {
-        Ok(())
+    fn read(&mut self, _addr: u8, _buf: &mut [u8]) -> Result<(), Self::Error> {
+        //  Not implemented, because BL602 needs the I2C Sub Address for read to work
+        panic!();
     }
 }
-*/
 
 /// NuttX I2C Write
 impl i2c::Write for I2c {
@@ -224,6 +223,7 @@ impl v2::OutputPin for OutputPin {
     }
 }
 
+/* TODO: Fails to build with BME280
 /// Read NuttX Input Pin
 impl v2::InputPin for InputPin {
     /// TODO: Error Type
@@ -248,7 +248,9 @@ impl v2::InputPin for InputPin {
         Ok(!self.is_high()?)
     }
 }
+*/
 
+/* TODO: Fails to build with BME280
 /// Read NuttX Interrupt Pin
 impl v2::InputPin for InterruptPin {
     /// TODO: Error Type
@@ -273,6 +275,7 @@ impl v2::InputPin for InterruptPin {
         Ok(!self.is_high()?)
     }
 }
+*/
 
 /// Set NuttX Unused Pin
 impl v2::OutputPin for UnusedPin {
@@ -291,10 +294,42 @@ impl v2::OutputPin for UnusedPin {
 }
 
 /// NuttX Delay in Microseconds
+impl DelayUs<u8> for Delay {
+    /// Sleep for us microseconds
+    fn delay_us(&mut self, us: u8) {
+        unsafe { usleep(us as u32); }
+    }
+}
+
+/// NuttX Delay in Microseconds
+impl DelayUs<u16> for Delay {
+    /// Sleep for us microseconds
+    fn delay_us(&mut self, us: u16) {
+        unsafe { usleep(us as u32); }
+    }
+}
+
+/// NuttX Delay in Microseconds
 impl DelayUs<u32> for Delay {
     /// Sleep for us microseconds
     fn delay_us(&mut self, us: u32) {
         unsafe { usleep(us); }
+    }
+}
+
+/// NuttX Delay in Milliseconds
+impl DelayMs<u8> for Delay {
+    /// Sleep for ms milliseconds
+    fn delay_ms(&mut self, ms: u8) {
+        unsafe { usleep(ms as u32 * 1000); }
+    }
+}
+
+/// NuttX Delay in Milliseconds
+impl DelayMs<u16> for Delay {
+    /// Sleep for ms milliseconds
+    fn delay_ms(&mut self, ms: u16) {
+        unsafe { usleep(ms as u32 * 1000); }
     }
 }
 
@@ -473,8 +508,7 @@ pub struct UnusedPin {
 }
 
 /// NuttX Delay Struct
-pub struct Delay {
-}
+pub struct Delay;
 
 /// Open a file and return the file descriptor.
 /// TODO: Auto-generate this wrapper with `bindgen` from the C declaration

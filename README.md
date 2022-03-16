@@ -684,4 +684,128 @@ Setup Read to [0xEF] + ACK
 
 # Rust Embedded Driver for BME280
 
-TODO
+Now that our Rust Embedded HAL is working on NuttX, let's test the Rust Embedded Driver for BME280...
+
+https://crates.io/crates/bme280
+
+Here's how we read the Temperature, Humidity and Pressure from the BME280 Driver...
+
+```rust
+/// Read Temperature, Pressure and Humidity from BME280 Sensor over I2C
+pub fn read_bme280() {
+    println!("read_bme280");
+
+    //  Open I2C Port
+    let i2c = nuttx_hal::I2c::new(
+        "/dev/i2c0",  //  I2C Port
+        400000,       //  I2C Frequency: 400 kHz
+    );
+    
+    //  Init the BME280 Driver
+    let mut bme280 = bme280::BME280::new(
+        i2c,   //  I2C Port
+        0x77,  //  I2C Address of BME280
+        nuttx_hal::Delay  //  Delay Interface
+    );
+
+    //  Init the BME280 Senor
+    bme280.init()
+        .expect("init failed");
+
+    //  Measure Temperature, Pressure and Humidity
+    let measurements = bme280.measure()
+        .expect("measure failed");
+
+    //  Print the measurements
+    println!("Relative Humidity = {}%", measurements.humidity);
+    println!("Temperature = {} deg C",  measurements.temperature);
+    println!("Pressure = {} pascals",   measurements.pressure);
+}
+```
+
+[(Source)](rust/src/bme280.rs)
+
+# Test Rust Driver for BME280
+
+Rust Driver for BME280 works OK!
+
+```text
+nsh> rust_i2c
+Hello from Rust!
+read_bme280
+i2cdrvr_ioctl: cmd=2101 arg=4201c340
+bl602_i2c_transfer: subflag=1, subaddr=0xd0, sublen=1
+bl602_i2c_recvdata: count=1, temp=0x60
+bl602_i2c_transfer: i2c transfer success
+i2cdrvr_ioctl: cmd=2101 arg=4201c328
+bl602_i2c_transfer: subflag=1, subaddr=0xb6e0, sublen=2
+bl602_i2c_recvdata: count=1, temp=0x0
+bl602_i2c_transfer: i2c transfer success
+i2cdrvr_ioctl: cmd=2101 arg=4201c350
+bl602_i2c_transfer: subflag=1, subaddr=0x88, sublen=1
+bl602_i2c_recvdata: count=26, temp=0x65e66e97
+bl602_i2c_recvdata: count=22, temp=0x8f990032
+bl602_i2c_recvdata: count=18, temp=0xbd0d581
+bl602_i2c_recvdata: count=14, temp=0xffdb1e71
+bl602_i2c_recvdata: count=10, temp=0x26acfff9
+bl602_i2c_transfer: i2c transfer success
+i2cdrvr_ioctl: cmd=2101 arg=4201c350
+bl602_i2c_transfer: subflag=1, subaddr=0xe1, sublen=1
+bl602_i2c_recvdata: count=7, temp=0x14000165
+bl602_i2c_recvdata: count=3, temp=0x141e000b
+bl602_i2c_transfer: i2c transfer success
+i2cdrvr_ioctl: cmd=2101 arg=4201c340
+bl602_i2c_transfer: subflag=1, subaddr=0xf4, sublen=1
+bl602_i2c_recvdata: count=1, temp=0x141e0000
+bl602_i2c_transfer: i2c transfer success
+i2cdrvr_ioctl: cmd=2101 arg=4201c338
+bl602_i2c_transfer: subflag=1, subaddr=0x1f2, sublen=2
+bl602_i2c_recvdata: count=1, temp=0x141e0001
+bl602_i2c_transfer: i2c transfer success
+i2cdrvr_ioctl: cmd=2101 arg=4201c340
+bl602_i2c_transfer: subflag=1, subaddr=0xf4, sublen=1
+bl602_i2c_recvdata: count=1, temp=0x141e0000
+bl602_i2c_transfer: i2c transfer success
+i2cdrvr_ioctl: cmd=2101 arg=4201c338
+bl602_i2c_transfer: subflag=1, subaddr=0xf4, sublen=2
+bl602_i2c_recvdata: count=1, temp=0x141e0000
+bl602_i2c_transfer: i2c transfer success
+i2cdrvr_ioctl: cmd=2101 arg=4201c340
+bl602_i2c_transfer: subflag=1, subaddr=0xf4, sublen=1
+bl602_i2c_recvdata: count=1, temp=0x141e0000
+bl602_i2c_transfer: i2c transfer success
+i2cdrvr_ioctl: cmd=2101 arg=4201c338
+bl602_i2c_transfer: subflag=1, subaddr=0x54f4, sublen=2
+bl602_i2c_recvdata: count=1, temp=0x141e0054
+bl602_i2c_transfer: i2c transfer success
+i2cdrvr_ioctl: cmd=2101 arg=4201c340
+bl602_i2c_transfer: subflag=1, subaddr=0xf5, sublen=1
+bl602_i2c_recvdata: count=1, temp=0x141e0000
+bl602_i2c_transfer: i2c transfer success
+i2cdrvr_ioctl: cmd=2101 arg=4201c338
+bl602_i2c_transfer: subflag=1, subaddr=0x10f5, sublen=2
+bl602_i2c_recvdata: count=1, temp=0x141e0010
+bl602_i2c_transfer: i2c transfer success
+i2cdrvr_ioctl: cmd=2101 arg=4201c370
+bl602_i2c_transfer: subflag=1, subaddr=0xf4, sublen=1
+bl602_i2c_recvdata: count=1, temp=0x141e0054
+bl602_i2c_transfer: i2c transfer success
+i2cdrvr_ioctl: cmd=2101 arg=4201c370
+bl602_i2c_transfer: subflag=1, subaddr=0xf4, sublen=1
+bl602_i2c_recvdata: count=1, temp=0x141e0054
+bl602_i2c_transfer: i2c transfer success
+i2cdrvr_ioctl: cmd=2101 arg=4201c368
+bl602_i2c_transfer: subflag=1, subaddr=0x55f4, sublen=2
+bl602_i2c_recvdata: count=1, temp=0x141e0055
+bl602_i2c_transfer: i2c transfer success
+i2cdrvr_ioctl: cmd=2101 arg=4201c380
+bl602_i2c_transfer: subflag=1, subaddr=0xf7, sublen=1
+bl602_i2c_recvdata: count=8, temp=0x86f0b752
+bl602_i2c_recvdata: count=4, temp=0x7b8f806b
+bl602_i2c_transfer: i2c transfer success
+Relative Humidity = 87.667625%
+Temperature = 30.358515 deg C
+Pressure = 100967.46 pascals
+Done!
+nsh>
+```

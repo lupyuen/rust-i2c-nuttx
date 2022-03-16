@@ -10,6 +10,9 @@ mod nuttx_hal;
 //  Import Test Module
 mod test;
 
+//  Import BME280 Module
+mod bme280;
+
 //  Import Libraries
 use core::{            //  Rust Core Library
     fmt,               //  String Formatting    
@@ -30,7 +33,10 @@ extern "C" fn rust_main() {  //  Declare `extern "C"` because it will be called 
     //  test::test_hal_read();
 
     //  Test the I2C HAL by writing an I2C Register
-    test::test_hal_write();
+    //  test::test_hal_write();
+
+    //  Read Temperature, Pressure and Humidity from BME280 Sensor over I2C
+    bme280::read_bme280();
 }
 
 /// Print a message to the serial console.
