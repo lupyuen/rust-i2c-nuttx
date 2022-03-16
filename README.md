@@ -543,11 +543,7 @@ Setup Write to [0xEE] + ACK
 0x00 + ACK
 ```
 
-Let's fix this. 
-
-# Fix I2C Write
-
-Here's the log for the I2C write...
+Let's fix this. Here's the log for the I2C write...
 
 ```text
 nsh> rust_i2c
@@ -560,15 +556,62 @@ bl602_i2c_transfer: i2c transfer success
 test_hal_write: Write 0xA0 to register
 ```
 
+# Fix I2C Write
+
 BL602 has a peculiar I2C Port that uses I2C Sub Addresses ... Let's make it work with Rust Embedded HAL
 
 https://lupyuen.github.io/articles/bme280#set-i2c-sub-address
 
-We tried all combinations of Read / Write / Sub Address. Only this strange combination works...
+We tried all sequences of I2C Read / Write / Sub Address. Only this strange sequence works for writing to I2C Registers...
 
 1.  Write I2C Register ID and I2C Data together as I2C Sub Address
 
 1.  Followed by Read I2C Data
+
+```rust
+    /// Write `buf` to I2C Port.
+    /// We assume this is a Write I2C Register operation, with Register ID at `buf[0]`.
+    /// TODO: Handle other kinds of I2C operations
+    fn write(&mut self, addr: u8, buf: &[u8]) -> Result<(), Self::Error> {
+        //  Copy to local buffer because we need a mutable reference
+        let mut buf2 = [0 ; 64];
+        assert!(buf.len() <= buf2.len());
+        buf2[..buf.len()].copy_from_slice(buf);
+
+        //  Buffer for received I2C data
+        let mut rbuf = [0 ; 1];
+
+        //  Compose I2C Transfer
+        let msg = [
+            //  First I2C Message: Send Register ID and I2C Data as I2C Sub Address
+            i2c_msg_s {
+                frequency: self.frequency,  //  I2C Frequency
+                addr:      addr as u16,     //  I2C Address
+                buffer:    buf2.as_mut_ptr(),     //  Buffer to be sent
+                length:    buf.len() as ssize_t,  //  Number of bytes to send
+
+                //  For BL602: Register ID must be passed as I2C Sub Address
+                #[cfg(target_arch = "riscv32")]  //  If architecture is RISC-V 32-bit...
+                flags:     I2C_M_NOSTOP,  //  I2C Flags: Send I2C Sub Address
+                
+                //  Otherwise pass Register ID as I2C Data
+                #[cfg(not(target_arch = "riscv32"))]  //  If architecture is not RISC-V 32-bit...
+                flags:     0,  //  I2C Flags: None
+
+                //  TODO: Check for BL602 specifically (by target_abi?), not just RISC-V 32-bit
+            },
+            //  Second I2C Message: Read I2C Data, because this forces BL602 to send the first message correctly
+            i2c_msg_s {
+                frequency: self.frequency,  //  I2C Frequency
+                addr:      addr as u16,     //  I2C Address
+                buffer:    rbuf.as_mut_ptr(),      //  Buffer to be received
+                length:    rbuf.len() as ssize_t,  //  Number of bytes to receive
+                flags:     I2C_M_READ,  //  I2C Flags: Read I2C Data
+            },
+        ];
+```
+
+[(Source)](rust/src/nuttx_hal.rs)
 
 After fixing, the I2C write works!
 
