@@ -73,16 +73,7 @@ impl i2c::Write for I2c {
                 addr:      addr as u16,     //  I2C Address
                 buffer:    rbuf.as_mut_ptr(),      //  Buffer to be received
                 length:    rbuf.len() as ssize_t,  //  Number of bytes to receive
-
-                //  For BL602: Register ID must be passed as I2C Sub Address
-                #[cfg(target_arch = "riscv32")]  //  If architecture is RISC-V 32-bit...
-                flags:     I2C_M_NOSTOP | I2C_M_READ,  //  I2C Flags: Send I2C Sub Address and Read I2C Data
-                
-                //  Otherwise pass Register ID as I2C Data
-                #[cfg(not(target_arch = "riscv32"))]  //  If architecture is not RISC-V 32-bit...
                 flags:     I2C_M_READ,  //  I2C Flags: Read I2C Data
-
-                //  TODO: Check for BL602 specifically (by target_abi?), not just RISC-V 32-bit
             },
         ];
         
