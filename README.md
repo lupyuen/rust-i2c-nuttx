@@ -564,13 +564,19 @@ BL602 has a peculiar I2C Port that uses I2C Sub Addresses ... Let's make it work
 
 https://lupyuen.github.io/articles/bme280#set-i2c-sub-address
 
+We tried all combinations of Read / Write / Sub Address. Only this strange combination works...
+
+1.  Write I2C Register ID and I2C Data together as I2C Sub Address
+
+1.  Followed by Read I2C Data
+
 After fixing, the I2C write works!
 
 ```text
 nsh> rust_i2c
 Hello from Rust!
 test_hal_write
-i2cdrvr_ioctl: cmd=2101 arg=4201c360
+i2cdrvr_ioctl: cmd=2101 arg=4201c358
 bl602_i2c_transfer: subflag=1, subaddr=0xa0f5, sublen=2
 bl602_i2c_recvdata: count=1, temp=0xa0
 bl602_i2c_transfer: i2c transfer success
@@ -580,7 +586,7 @@ bl602_i2c_transfer: subflag=1, subaddr=0xf5, sublen=1
 bl602_i2c_recvdata: count=1, temp=0xa0
 bl602_i2c_transfer: i2c transfer success
 test_hal_write: Register value is 0xa0
-i2cdrvr_ioctl: cmd=2101 arg=4201c360
+i2cdrvr_ioctl: cmd=2101 arg=4201c358
 bl602_i2c_transfer: subflag=1, subaddr=0xf5, sublen=2
 bl602_i2c_recvdata: count=1, temp=0x0
 bl602_i2c_transfer: i2c transfer success
