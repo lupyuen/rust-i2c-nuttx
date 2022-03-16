@@ -47,6 +47,7 @@ impl i2c::Write for I2c {
 
         //  TODO
         static mut BUF4: [u8 ; 1] = [0x55];
+        static mut BUF5: [u8 ; 1] = [0x66];
 
         //  Compose I2C Transfer
         let msg = [
@@ -68,23 +69,23 @@ impl i2c::Write for I2c {
 
                 //  TODO: Check for BL602 specifically (by target_abi?), not just RISC-V 32-bit
             },
-            //  Second I2C Message: Send value of next register as I2C Sub Address
+            //  Second I2C Message: Send I2C Data
             i2c_msg_s {
                 frequency: self.frequency,  //  I2C Frequency
                 addr:      addr as u16,     //  I2C Address
+                flags:     0,               //  I2C Flags: Send I2C Data
 
                 buffer: unsafe { BUF4.as_mut_ptr() },
                 length: unsafe { BUF4.len() } as ssize_t,
+            },
+            //  Third I2C Message: Receive I2C Data
+            i2c_msg_s {
+                frequency: self.frequency,  //  I2C Frequency
+                addr:      addr as u16,     //  I2C Address
+                flags:     I2C_M_READ,      //  I2C Flags: Read I2C Data
 
-                //  For BL602: Register Value must be passed as I2C Sub Address
-                #[cfg(target_arch = "riscv32")]  //  If architecture is RISC-V 32-bit...
-                flags:     I2C_M_NOSTOP,  //  I2C Flags: Send I2C Sub Address
-                
-                //  Otherwise pass Register Value as I2C Data
-                #[cfg(not(target_arch = "riscv32"))]  //  If architecture is not RISC-V 32-bit...
-                flags:     0,  //  I2C Flags: None
-
-                //  TODO: Check for BL602 specifically (by target_abi?), not just RISC-V 32-bit
+                buffer: unsafe { BUF5.as_mut_ptr() },
+                length: unsafe { BUF5.len() } as ssize_t,
             },
         ];
         
@@ -148,7 +149,7 @@ impl i2c::WriteRead for I2c {
                 addr:      addr as u16,     //  I2C Address
                 buffer:    rbuf.as_mut_ptr(),      //  Buffer to be received
                 length:    rbuf.len() as ssize_t,  //  Number of bytes to receive
-                flags:     I2C_M_READ,  //  I2C Flags: Read from I2C Device
+                flags:     I2C_M_READ,  //  I2C Flags: Read I2C Data
             },
         ];
 
