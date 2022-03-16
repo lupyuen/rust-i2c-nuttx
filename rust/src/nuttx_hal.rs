@@ -91,6 +91,7 @@ impl i2c::Write for I2c {
                 buffer: unsafe { BUF5.as_mut_ptr() },
                 length: unsafe { BUF5.len() } as ssize_t,
             },
+            /*
             //  Third I2C Message: Receive I2C Data
             i2c_msg_s {
                 frequency: self.frequency,  //  I2C Frequency
@@ -100,6 +101,7 @@ impl i2c::Write for I2c {
                 buffer: unsafe { RBUF.as_mut_ptr() },
                 length: unsafe { RBUF.len() } as ssize_t,
             },
+            */
         ];
         
         //  Compose ioctl Argument to write I2C Registers
