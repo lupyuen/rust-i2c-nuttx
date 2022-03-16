@@ -50,9 +50,11 @@ impl i2c::Write for I2c {
         let mut start = [reg_id ; 1];
 
         //  TODO
+        static mut RBUF: [u8 ; 1] = [0x00];
         static mut BUF3: [u8 ; 2] = [0x11, 0x22];
-        static mut BUF4: [u8 ; 1] = [0x55];
-        static mut BUF5: [u8 ; 1] = [0x66];
+        static mut BUF4: [u8 ; 1] = [0x44];
+        static mut BUF5: [u8 ; 1] = [0x55];
+        static mut BUF6: [u8 ; 1] = [0x66];
 
         //  Compose I2C Transfer
         let msg = [
@@ -86,8 +88,8 @@ impl i2c::Write for I2c {
                 //buffer:    buf2[1..].as_mut_ptr(),      //  Buffer to be sent, skipping Register ID
                 //length:    (buf.len() - 1) as ssize_t,  //  Number of bytes to send, skipping Register ID
 
-                buffer: unsafe { BUF3.as_mut_ptr() },
-                length: unsafe { BUF3.len() } as ssize_t,
+                buffer: unsafe { BUF5.as_mut_ptr() },
+                length: unsafe { BUF5.len() } as ssize_t,
             },
             //  Third I2C Message: Receive I2C Data
             i2c_msg_s {
@@ -95,8 +97,8 @@ impl i2c::Write for I2c {
                 addr:      addr as u16,     //  I2C Address
                 flags:     I2C_M_READ,      //  I2C Flags: Read I2C Data
 
-                buffer: unsafe { BUF5.as_mut_ptr() },
-                length: unsafe { BUF5.len() } as ssize_t,
+                buffer: unsafe { RBUF.as_mut_ptr() },
+                length: unsafe { RBUF.len() } as ssize_t,
             },
         ];
         
