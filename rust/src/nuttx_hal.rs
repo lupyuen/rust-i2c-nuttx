@@ -63,11 +63,11 @@ impl i2c::Write for I2c {
                 frequency: self.frequency,  //  I2C Frequency
                 addr:      addr as u16,     //  I2C Address
 
-                //buffer:    start.as_mut_ptr(),      //  Buffer to be sent
-                //length:    start.len() as ssize_t,  //  Number of bytes to send
+                //buffer:    buf2.as_mut_ptr(),     //  Buffer to be sent
+                //length:    buf.len() as ssize_t,  //  Number of bytes to send
 
-                buffer: unsafe { BUF4.as_mut_ptr() },
-                length: unsafe { BUF4.len() } as ssize_t,
+                buffer: unsafe { BUF3.as_mut_ptr() },
+                length: unsafe { BUF3.len() } as ssize_t,
 
                 //  For BL602: Register ID must be passed as I2C Sub Address
                 #[cfg(target_arch = "riscv32")]  //  If architecture is RISC-V 32-bit...
@@ -93,7 +93,7 @@ impl i2c::Write for I2c {
 
                 //  For BL602: Register ID must be passed as I2C Sub Address
                 #[cfg(target_arch = "riscv32")]  //  If architecture is RISC-V 32-bit...
-                flags:     I2C_M_NOSTOP,  //  I2C Flags: Send I2C Sub Address
+                flags:     I2C_M_NOSTOP | I2C_M_READ,  //  I2C Flags: Send I2C Sub Address and Read I2C Data
                 
                 //  Otherwise pass Register ID as I2C Data
                 #[cfg(not(target_arch = "riscv32"))]  //  If architecture is not RISC-V 32-bit...
@@ -101,6 +101,7 @@ impl i2c::Write for I2c {
 
                 //  TODO: Check for BL602 specifically (by target_abi?), not just RISC-V 32-bit
             },
+            /*
             //  Third I2C Message
             i2c_msg_s {
                 frequency: self.frequency,  //  I2C Frequency
@@ -125,6 +126,8 @@ impl i2c::Write for I2c {
                 //  TODO: Check for BL602 specifically (by target_abi?), not just RISC-V 32-bit
                 */
             },
+            */
+            /*
             //  Fourth I2C Message: Receive I2C Data
             i2c_msg_s {
                 frequency: self.frequency,  //  I2C Frequency
@@ -134,6 +137,7 @@ impl i2c::Write for I2c {
                 buffer: unsafe { RBUF.as_mut_ptr() },
                 length: unsafe { RBUF.len() } as ssize_t,
             },
+            */
         ];
         
         //  Compose ioctl Argument to write I2C Registers
