@@ -16,6 +16,7 @@ name = "app"
 version = "0.0.1"
 dependencies = [
  "bme280",
+ "bme280-multibus",
  "embedded-hal",
  "heapless",
 ]
@@ -62,6 +63,15 @@ name = "bme280"
 version = "0.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "bc93357f2a5603736e2c1f1ba8e18e9ec80efa7fdade5d6a37c11362b76363f4"
+dependencies = [
+ "embedded-hal",
+]
+
+[[package]]
+name = "bme280-multibus"
+version = "0.2.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "573450a6afe92ac4ad4dff3aa61ad6fd34d75e56a81b32468021bb4c836d4b32"
 dependencies = [
  "embedded-hal",
 ]
