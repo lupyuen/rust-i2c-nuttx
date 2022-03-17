@@ -171,9 +171,9 @@ checksum = "546c37ac5d9e56f55e73b677106873d9d9f5190605e41a856503623648488cae"
 
 [[package]]
 name = "nuttx-embedded-hal"
-version = "1.0.2"
+version = "1.0.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9dc47c6b4a98c0c170736b9be6ba4a68e02b026be272157b3e5cad9a66cc4d11"
+checksum = "7b62a8e72b08b2a8cfe0005d9d16d79c7df9353e4b0c7c7b6af5735107bc7a7c"
 dependencies = [
  "embedded-hal",
  "heapless",
