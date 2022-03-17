@@ -716,7 +716,6 @@ We add the BME280 Driver to [Cargo.toml](rust/Cargo.toml)...
 ```text
 # External Rust libraries used by this module.  See crates.io.
 [dependencies]
-...
 bme280 = "0.2.1"  # BME280 Driver: https://crates.io/crates/bme280
 ```
 
@@ -759,7 +758,7 @@ pub fn read_bme280() {
 
 # Test Rust Driver for BME280
 
-Rust Driver for BME280 works OK!
+Rust Driver for BME280 works OK on NuttX!
 
 ```text
 nsh> rust_i2c
@@ -840,4 +839,18 @@ Temperature = 30.358515 deg C
 Pressure = 100967.46 pascals
 Done!
 nsh>
+```
+
+# Rust Embedded HAL for NuttX
+
+The Rust Embedded HAL for NuttX has been published at crates.io...
+
+https://crates.io/crates/nuttx-embedded-hal
+
+To use it in your project, add this to your [Cargo.toml](rust/Cargo.toml):
+
+```text
+# External Rust libraries used by this module.  See crates.io.
+[dependencies]
+nuttx-embedded-hal = "1.0.1"  # Rust Embedded HAL for NuttX: https://crates.io/crates/nuttx-embedded-hal
 ```
