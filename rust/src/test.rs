@@ -5,9 +5,8 @@ use embedded_hal::blocking::i2c::{  //  Rust Embedded HAL for I2C
     Write,     //  Write I2C Data
     WriteRead  //  Write and Read I2C Data
 };
-use crate::{      //  Local Library
-    nuttx_hal,    //  NuttX Embedded HAL
-    close, ioctl, open, sleep,                          //  NuttX Functions
+use nuttx_embedded_hal::{  //  NuttX Embedded HAL
+    close, ioctl, open, println, sleep,                 //  NuttX Functions
     i2c_msg_s, i2c_transfer_s, size_t, ssize_t,         //  NuttX Types
     I2CIOC_TRANSFER, I2C_M_NOSTOP, I2C_M_READ, O_RDWR,  //  NuttX Constants
 };
@@ -21,9 +20,6 @@ const BME280_FREQ: u32 = 400000;
 /// I2C Register that contains the BME280 Device ID
 const BME280_REG_ID: u8 = 0xD0;
 
-/// I2C Register that controls the BME280 Power Mode
-const BME280_REG_CTRL_MEASL: u8 = 0xF4;
-
 /// I2C Register that configures the BME280 Standby Interval
 const BME280_REG_CONFIG: u8 = 0xF5;
 
@@ -35,10 +31,10 @@ pub fn test_hal_read() {
     println!("test_hal_read");
 
     //  Open I2C Port
-    let mut i2c = nuttx_hal::I2c::new(
+    let mut i2c = nuttx_embedded_hal::I2c::new(
         "/dev/i2c0",  //  I2C Port
         BME280_FREQ,  //  I2C Frequency
-    );
+    ).expect("open failed");
 
     //  Buffer for received I2C data
     let mut buf = [0 ; 1];
@@ -70,10 +66,10 @@ pub fn test_hal_write() {
     println!("test_hal_write");
 
     //  Open I2C Port
-    let mut i2c = nuttx_hal::I2c::new(
+    let mut i2c = nuttx_embedded_hal::I2c::new(
         "/dev/i2c0",  //  I2C Port
         BME280_FREQ,  //  I2C Frequency
-    );
+    ).expect("open failed");
 
     //  Buffer for received I2C data
     let mut buf = [0 ; 1];
