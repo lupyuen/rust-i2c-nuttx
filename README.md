@@ -588,7 +588,7 @@ test_hal_write: Write 0xA0 to register
 
 BL602 has a peculiar I2C Port that uses I2C Sub Addresses ... Let's make it work with Rust Embedded HAL
 
-https://lupyuen.github.io/articles/bme280#set-i2c-sub-address
+["Quirks in BL602 I2C Driver"](https://lupyuen.github.io/articles/bme280#appendix-quirks-in-bl602-nuttx-i2c-driver)
 
 We tried all sequences of I2C Read / Write / Sub Address. Only this strange sequence works for writing to I2C Registers...
 
@@ -664,16 +664,19 @@ bl602_i2c_transfer: subflag=1, subaddr=0xa0f5, sublen=2
 bl602_i2c_recvdata: count=1, temp=0xa0
 bl602_i2c_transfer: i2c transfer success
 test_hal_write: Write 0xA0 to register
+
 i2cdrvr_ioctl: cmd=2101 arg=4201c370
 bl602_i2c_transfer: subflag=1, subaddr=0xf5, sublen=1
 bl602_i2c_recvdata: count=1, temp=0xa0
 bl602_i2c_transfer: i2c transfer success
 test_hal_write: Register value is 0xa0
+
 i2cdrvr_ioctl: cmd=2101 arg=4201c358
 bl602_i2c_transfer: subflag=1, subaddr=0xf5, sublen=2
 bl602_i2c_recvdata: count=1, temp=0x0
 bl602_i2c_transfer: i2c transfer success
 test_hal_write: Write 0x00 to register
+
 i2cdrvr_ioctl: cmd=2101 arg=4201c370
 bl602_i2c_transfer: subflag=1, subaddr=0xf5, sublen=1
 bl602_i2c_recvdata: count=1, temp=0x0
@@ -685,17 +688,17 @@ nsh>
 
 _What if we write to the I2C Register without reading?_
 
-The I2C Write gets truncated...
+The I2C Address is sent incorrectly (`0x02`) and the I2C Write gets truncated...
 
 ```text
 Setup Write to [0x02] + NAK
 ```
 
-![](https://lupyuen.github.io/images/rusti2c-noread.png)
+![Write to I2C Register without reading](https://lupyuen.github.io/images/rusti2c-noread.png)
 
-_What if we send the Register ID and Register Value as I2C Data instead of I2C Sub Address? (i.e. flags = 0)_
+_What if we send the Register ID and Register Value as I2C Data (flags = 0) instead of I2C Sub Address?_
 
-The I2C Write gets zeroed...
+The Register ID and value are sent incorrectly as `0x00 0x00`...
 
 ```text
 Setup Write to [0xEE] + ACK
@@ -706,7 +709,7 @@ Setup Read to [0xEF] + ACK
 0x00 + NAK
 ```
 
-![](https://lupyuen.github.io/images/rusti2c-nosubaddr.png)
+![Send the Register ID and Register Value as I2C Data instead of I2C Sub Address](https://lupyuen.github.io/images/rusti2c-nosubaddr.png)
 
 # Rust Embedded Driver for BME280
 
