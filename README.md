@@ -69,13 +69,16 @@ nsh> rust_i2c
 Hello from Rust!
 test_i2c
 test_i2c: Register 0xd0 is 0x60
+
 test_hal_read
 test_hal_read: Register 0xd0 is 0x60
+
 test_hal_write
 test_hal_write: Write 0xA0 to register
 test_hal_write: Register value is 0xa0
 test_hal_write: Write 0x00 to register
 test_hal_write: Register value is 0x00
+
 read_bme280
 Relative Humidity = 89.284164%
 Temperature = 29.942907 deg C

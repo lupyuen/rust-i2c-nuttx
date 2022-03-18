@@ -8,7 +8,7 @@ use embedded_hal::blocking::i2c::{  //  Rust Embedded HAL for I2C
 use nuttx_embedded_hal::{  //  NuttX Embedded HAL
     close, ioctl, open, println, sleep,                 //  NuttX Functions
     i2c_msg_s, i2c_transfer_s, size_t, ssize_t,         //  NuttX Types
-    I2CIOC_TRANSFER, I2C_M_NOSTOP, I2C_M_READ, O_RDWR,  //  NuttX Constants
+    I2CIOC_TRANSFER, I2C_M_READ, O_RDWR,  //  NuttX Constants
 };
 
 /// I2C Address of BME280
@@ -58,7 +58,7 @@ pub fn test_hal_read() {
 
     //  Sleep 2 seconds
     unsafe { sleep(2); }
-    println!();
+    println!("\n");
 }
 
 /// Test the I2C HAL by writing an I2C Register
@@ -81,9 +81,6 @@ pub fn test_hal_write() {
     ).expect("write register failed");
     println!("test_hal_write: Write 0xA0 to register");
 
-    //  Sleep 1 second
-    unsafe { sleep(1); }
-
     //  Read from register 0xF5
     i2c.write_read(
         BME280_ADDR as u8,     //  I2C Address
@@ -95,18 +92,12 @@ pub fn test_hal_write() {
     println!("test_hal_write: Register value is 0x{:02x}", buf[0]);
     assert_eq!(buf[0], 0xA0);
 
-    //  Sleep 1 second
-    unsafe { sleep(1); }
-
     //  Write 0x00 to register 0xF5
     i2c.write(
         BME280_ADDR as u8,          //  I2C Address
         &[BME280_REG_CONFIG, 0x00]  //  Register ID and value
     ).expect("write register failed");
     println!("test_hal_write: Write 0x00 to register");
-
-    //  Sleep 1 second
-    unsafe { sleep(1); }
 
     //  Read from register 0xF5
     i2c.write_read(
@@ -121,7 +112,7 @@ pub fn test_hal_write() {
 
     //  Sleep 2 seconds
     unsafe { sleep(2); }
-    println!();
+    println!("\n");
 }
 
 /// Test the I2C Port by reading an I2C Register through ioctl
@@ -149,7 +140,7 @@ pub fn test_i2c() {
 
             //  For BL602: Register ID must be passed as I2C Sub Address
             #[cfg(target_arch = "riscv32")]  //  If architecture is RISC-V 32-bit...
-            flags:     I2C_M_NOSTOP,  //  I2C Flags: Send I2C Sub Address
+            flags:     nuttx_embedded_hal::I2C_M_NOSTOP,  //  I2C Flags: Send I2C Sub Address
             
             //  Otherwise pass Register ID as I2C Data
             #[cfg(not(target_arch = "riscv32"))]  //  If architecture is not RISC-V 32-bit...
@@ -198,5 +189,5 @@ pub fn test_i2c() {
 
     //  Sleep 2 seconds
     unsafe { sleep(2); }
-    println!();
+    println!("\n");
 }
