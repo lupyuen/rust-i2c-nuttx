@@ -87,6 +87,22 @@ Done!
 nsh>
 ```
 
+# Rust Embedded HAL for NuttX
+
+The Rust Embedded HAL for NuttX has been published at crates.io...
+
+https://crates.io/crates/nuttx-embedded-hal
+
+To use it in your project, add this to your [Cargo.toml](rust/Cargo.toml):
+
+```text
+# External Rust libraries used by this module.  See crates.io.
+[dependencies]
+nuttx-embedded-hal = "1.0.6"  # Rust Embedded HAL for NuttX: https://crates.io/crates/nuttx-embedded-hal
+```
+
+[(Always use the latest version of __nuttx-embedded-hal__)](https://crates.io/crates/nuttx-embedded-hal)
+
 # From C to Rust
 
 This is how we read an I2C Register in C...
@@ -336,7 +352,7 @@ pub struct i2c_transfer_s {
 }
 ```
 
-[(Source)](rust/src/lib.rs)
+[(Source)](https://github.com/lupyuen/nuttx-embedded-hal/blob/main/src/lib.rs#L125-L153)
 
 # Test I2C Port
 
@@ -376,47 +392,42 @@ Yep our Rust app reads the BME280 I2C Register correctly!
 Rust Embedded HAL defines a standard API for I2C Operations. Let's wrap the NuttX I2C ioctl() Commands and expose as Rust Embedded HAL interfaces...
 
 ```rust
-/// NuttX I2C Read
+/// NuttX Implementation of I2C Read
 impl i2c::Read for I2c {
-    /// TODO: Error Type
-    type Error = ();
-
+    ...
     /// TODO: Read I2C data
     fn read(&mut self, addr: u8, buf: &mut [u8]) -> Result<(), Self::Error> { ... }
 }
 
-/// NuttX I2C Write
+/// NuttX Implementation of I2C Write
 impl i2c::Write for I2c {
-    /// TODO: Error Type
-    type Error = ();
-
+    ...
     /// TODO: Write I2C data
     fn write(&mut self, addr: u8, buf: &[u8]) -> Result<(), Self::Error> { ... }
 }
 
-/// NuttX I2C WriteRead
+/// NuttX Implementation of I2C WriteRead
 impl i2c::WriteRead for I2c {
-    /// TODO: Error Type
-    type Error = ();
-
+    ...
     /// TODO: Write and read I2C data
     fn write_read(&mut self, addr: u8, wbuf: &[u8], rbuf: &mut [u8]) -> Result<(), Self::Error> { ... }
 }
 ```
 
-[(Source)](rust/src/nuttx_hal.rs)
+[(Source)](https://github.com/lupyuen/nuttx-embedded-hal/blob/main/src/hal.rs#L20-L160)
 
 # Read I2C Register
 
 Here's how we implement the Rust Embedded HAL to read an I2C Register...
 
 ```rust
-/// NuttX I2C WriteRead
+/// NuttX Implementation of I2C WriteRead
 impl i2c::WriteRead for I2c {
-    /// TODO: Error Type
-    type Error = ();
+    /// Error Type
+    type Error = i32;
 
-    /// Write and read I2C data. We assume this is a Read I2C Register operation, with Register ID at wbuf[0].
+    /// Write `wbuf` to I2C Port and read `rbuf` from I2C Port.
+    /// We assume this is a Read I2C Register operation, with Register ID at `wbuf[0]`.
     /// TODO: Handle other kinds of I2C operations
     fn write_read(&mut self, addr: u8, wbuf: &[u8], rbuf: &mut [u8]) -> Result<(), Self::Error> {
         //  We assume this is a Read I2C Register operation, with Register ID at wbuf[0]
@@ -427,17 +438,17 @@ impl i2c::WriteRead for I2c {
         let mut start = [reg_id ; 1];
 
         //  Compose I2C Transfer
-        let msg: [i2c_msg_s ; 2] = [
+        let msg = [
             //  First I2C Message: Send Register ID
             i2c_msg_s {
                 frequency: self.frequency,  //  I2C Frequency
                 addr:      addr as u16,     //  I2C Address
                 buffer:    start.as_mut_ptr(),      //  Buffer to be sent
-                length:    start.len() as ssize_t,  //  Length of the buffer in bytes
+                length:    start.len() as ssize_t,  //  Number of bytes to send
 
                 //  For BL602: Register ID must be passed as I2C Sub Address
                 #[cfg(target_arch = "riscv32")]  //  If architecture is RISC-V 32-bit...
-                flags:     I2C_M_NOSTOP,  //  I2C Flags: Send I2C Sub Address
+                flags:     crate::I2C_M_NOSTOP,  //  I2C Flags: Send I2C Sub Address
                 
                 //  Otherwise pass Register ID as I2C Data
                 #[cfg(not(target_arch = "riscv32"))]  //  If architecture is not RISC-V 32-bit...
@@ -445,13 +456,13 @@ impl i2c::WriteRead for I2c {
 
                 //  TODO: Check for BL602 specifically (by target_abi?), not just RISC-V 32-bit
             },
-            //  Second I2C Message: Receive Register Value
+            //  Second I2C Message: Receive Register Values
             i2c_msg_s {
                 frequency: self.frequency,  //  I2C Frequency
                 addr:      addr as u16,     //  I2C Address
                 buffer:    rbuf.as_mut_ptr(),      //  Buffer to be received
-                length:    rbuf.len() as ssize_t,  //  Length of the buffer in bytes
-                flags:     I2C_M_READ,  //  I2C Flags: Read from I2C Device
+                length:    rbuf.len() as ssize_t,  //  Number of bytes to receive
+                flags:     I2C_M_READ,  //  I2C Flags: Read I2C Data
             },
         ];
 
@@ -470,29 +481,27 @@ impl i2c::WriteRead for I2c {
             )
         };
         assert!(ret >= 0);   
-
         Ok(())
     }
 }
 ```
 
-[(Source)](rust/src/nuttx_hal.rs)
+[(Source)](https://github.com/lupyuen/nuttx-embedded-hal/blob/main/src/hal.rs#L98-L160)
 
 To read an I2C Register, we call the Rust Embedded HAL like so...
 
 ```rust
 /// Test the I2C HAL by reading an I2C Register
 pub fn test_hal_read() {
-    println!("test_hal_read");
 
     //  Open I2C Port
-    let mut i2c = nuttx_hal::I2c::new(
+    let mut i2c = nuttx_embedded_hal::I2c::new(
         "/dev/i2c0",  //  I2C Port
         BME280_FREQ,  //  I2C Frequency
-    );
+    ).expect("open failed");
 
     //  Buffer for received I2C data
-    let mut buf = [0u8 ; 1];
+    let mut buf = [0 ; 1];
 
     //  Read one I2C Register, starting at Device ID
     i2c.write_read(
@@ -510,9 +519,6 @@ pub fn test_hal_read() {
 
     //  Register Value must be BME280 Device ID (0x60)
     assert_eq!(buf[0], BME280_CHIP_ID);
-
-    //  Sleep 5 seconds
-    unsafe { sleep(5); }
 }
 ```
 
@@ -544,13 +550,12 @@ This code calls the Rust Embedded HAL to write the value 0xA0 to the I2C Registe
 ```rust
 /// Test the I2C HAL by writing an I2C Register
 pub fn test_hal_write() {
-    println!("test_hal_write");
 
     //  Open I2C Port
-    let mut i2c = nuttx_hal::I2c::new(
+    let mut i2c = nuttx_embedded_hal::I2c::new(
         "/dev/i2c0",  //  I2C Port
         BME280_FREQ,  //  I2C Frequency
-    );
+    ).expect("open failed");
 
     //  Write 0xA0 to register 0xF5
     i2c.write(
@@ -569,7 +574,7 @@ Setup Write to [0xEE] + ACK
 0x00 + ACK
 ```
 
-![](https://lupyuen.github.io/images/rusti2c-logic1.png)
+![BL602 is writing to I2C the value 0x00 instead of 0xA0](https://lupyuen.github.io/images/rusti2c-logic1.png)
 
 Let's fix this. Here's the log for the I2C write...
 
@@ -597,6 +602,11 @@ We tried all sequences of I2C Read / Write / Sub Address. Only this strange sequ
 1.  Followed by Read I2C Data
 
 ```rust
+/// NuttX Implementation of I2C Write
+impl i2c::Write for I2c {
+    /// Error Type
+    type Error = i32;
+
     /// Write `buf` to I2C Port.
     /// We assume this is a Write I2C Register operation, with Register ID at `buf[0]`.
     /// TODO: Handle other kinds of I2C operations
@@ -620,7 +630,7 @@ We tried all sequences of I2C Read / Write / Sub Address. Only this strange sequ
 
                 //  For BL602: Register ID must be passed as I2C Sub Address
                 #[cfg(target_arch = "riscv32")]  //  If architecture is RISC-V 32-bit...
-                flags:     I2C_M_NOSTOP,  //  I2C Flags: Send I2C Sub Address
+                flags:     crate::I2C_M_NOSTOP,  //  I2C Flags: Send I2C Sub Address
                 
                 //  Otherwise pass Register ID as I2C Data
                 #[cfg(not(target_arch = "riscv32"))]  //  If architecture is not RISC-V 32-bit...
@@ -637,9 +647,28 @@ We tried all sequences of I2C Read / Write / Sub Address. Only this strange sequ
                 flags:     I2C_M_READ,  //  I2C Flags: Read I2C Data
             },
         ];
+        
+        //  Compose ioctl Argument to write I2C Registers
+        let xfer = i2c_transfer_s {
+            msgv: msg.as_ptr(),         //  Array of I2C messages for the transfer
+            msgc: msg.len() as size_t,  //  Number of messages in the array
+        };
+
+        //  Execute I2C Transfer to write I2C Registers
+        let ret = unsafe { 
+            ioctl(
+                self.fd,          //  I2C Port
+                I2CIOC_TRANSFER,  //  I2C Transfer
+                &xfer             //  I2C Messages for the transfer
+            )
+        };
+        assert!(ret >= 0);   
+        Ok(())
+    }
+}
 ```
 
-[(Source)](rust/src/nuttx_hal.rs)
+[(Source)](https://github.com/lupyuen/nuttx-embedded-hal/blob/main/src/hal.rs#L33-L96)
 
 After fixing, the Logic Analyser shows that BL602 writes correctly to the I2C Register! (With a harmless I2C Read at the end)
 
@@ -651,7 +680,7 @@ Setup Read to [0xEF] + ACK
 0xA0 + NAK
 ```
 
-![](https://lupyuen.github.io/images/rusti2c-logic3a.png)
+![BL602 writes correctly to the I2C Register! With a harmless I2C Read at the end](https://lupyuen.github.io/images/rusti2c-logic3a.png)
 
 Here's the log...
 
@@ -733,16 +762,16 @@ pub fn read_bme280() {
     println!("read_bme280");
 
     //  Open I2C Port
-    let i2c = nuttx_hal::I2c::new(
+    let i2c = nuttx_embedded_hal::I2c::new(
         "/dev/i2c0",  //  I2C Port
         400000,       //  I2C Frequency: 400 kHz
-    );
+    ).expect("open failed");
     
     //  Init the BME280 Driver
     let mut bme280 = bme280::BME280::new(
         i2c,   //  I2C Port
         0x77,  //  I2C Address of BME280
-        nuttx_hal::Delay  //  Delay Interface
+        nuttx_embedded_hal::Delay  //  Delay Interface
     );
 
     //  Init the BME280 Senor
@@ -774,10 +803,12 @@ i2cdrvr_ioctl: cmd=2101 arg=4201c340
 bl602_i2c_transfer: subflag=1, subaddr=0xd0, sublen=1
 bl602_i2c_recvdata: count=1, temp=0x60
 bl602_i2c_transfer: i2c transfer success
+
 i2cdrvr_ioctl: cmd=2101 arg=4201c328
 bl602_i2c_transfer: subflag=1, subaddr=0xb6e0, sublen=2
 bl602_i2c_recvdata: count=1, temp=0x0
 bl602_i2c_transfer: i2c transfer success
+
 i2cdrvr_ioctl: cmd=2101 arg=4201c350
 bl602_i2c_transfer: subflag=1, subaddr=0x88, sublen=1
 bl602_i2c_recvdata: count=26, temp=0x65e66e97
@@ -786,77 +817,76 @@ bl602_i2c_recvdata: count=18, temp=0xbd0d581
 bl602_i2c_recvdata: count=14, temp=0xffdb1e71
 bl602_i2c_recvdata: count=10, temp=0x26acfff9
 bl602_i2c_transfer: i2c transfer success
+
 i2cdrvr_ioctl: cmd=2101 arg=4201c350
 bl602_i2c_transfer: subflag=1, subaddr=0xe1, sublen=1
 bl602_i2c_recvdata: count=7, temp=0x14000165
 bl602_i2c_recvdata: count=3, temp=0x141e000b
 bl602_i2c_transfer: i2c transfer success
+
 i2cdrvr_ioctl: cmd=2101 arg=4201c340
 bl602_i2c_transfer: subflag=1, subaddr=0xf4, sublen=1
 bl602_i2c_recvdata: count=1, temp=0x141e0000
 bl602_i2c_transfer: i2c transfer success
+
 i2cdrvr_ioctl: cmd=2101 arg=4201c338
 bl602_i2c_transfer: subflag=1, subaddr=0x1f2, sublen=2
 bl602_i2c_recvdata: count=1, temp=0x141e0001
 bl602_i2c_transfer: i2c transfer success
+
 i2cdrvr_ioctl: cmd=2101 arg=4201c340
 bl602_i2c_transfer: subflag=1, subaddr=0xf4, sublen=1
 bl602_i2c_recvdata: count=1, temp=0x141e0000
 bl602_i2c_transfer: i2c transfer success
+
 i2cdrvr_ioctl: cmd=2101 arg=4201c338
 bl602_i2c_transfer: subflag=1, subaddr=0xf4, sublen=2
 bl602_i2c_recvdata: count=1, temp=0x141e0000
 bl602_i2c_transfer: i2c transfer success
+
 i2cdrvr_ioctl: cmd=2101 arg=4201c340
 bl602_i2c_transfer: subflag=1, subaddr=0xf4, sublen=1
 bl602_i2c_recvdata: count=1, temp=0x141e0000
 bl602_i2c_transfer: i2c transfer success
+
 i2cdrvr_ioctl: cmd=2101 arg=4201c338
 bl602_i2c_transfer: subflag=1, subaddr=0x54f4, sublen=2
 bl602_i2c_recvdata: count=1, temp=0x141e0054
 bl602_i2c_transfer: i2c transfer success
+
 i2cdrvr_ioctl: cmd=2101 arg=4201c340
 bl602_i2c_transfer: subflag=1, subaddr=0xf5, sublen=1
 bl602_i2c_recvdata: count=1, temp=0x141e0000
 bl602_i2c_transfer: i2c transfer success
+
 i2cdrvr_ioctl: cmd=2101 arg=4201c338
 bl602_i2c_transfer: subflag=1, subaddr=0x10f5, sublen=2
 bl602_i2c_recvdata: count=1, temp=0x141e0010
 bl602_i2c_transfer: i2c transfer success
+
 i2cdrvr_ioctl: cmd=2101 arg=4201c370
 bl602_i2c_transfer: subflag=1, subaddr=0xf4, sublen=1
 bl602_i2c_recvdata: count=1, temp=0x141e0054
 bl602_i2c_transfer: i2c transfer success
+
 i2cdrvr_ioctl: cmd=2101 arg=4201c370
 bl602_i2c_transfer: subflag=1, subaddr=0xf4, sublen=1
 bl602_i2c_recvdata: count=1, temp=0x141e0054
 bl602_i2c_transfer: i2c transfer success
+
 i2cdrvr_ioctl: cmd=2101 arg=4201c368
 bl602_i2c_transfer: subflag=1, subaddr=0x55f4, sublen=2
 bl602_i2c_recvdata: count=1, temp=0x141e0055
 bl602_i2c_transfer: i2c transfer success
+
 i2cdrvr_ioctl: cmd=2101 arg=4201c380
 bl602_i2c_transfer: subflag=1, subaddr=0xf7, sublen=1
 bl602_i2c_recvdata: count=8, temp=0x86f0b752
 bl602_i2c_recvdata: count=4, temp=0x7b8f806b
 bl602_i2c_transfer: i2c transfer success
+
 Relative Humidity = 87.667625%
 Temperature = 30.358515 deg C
 Pressure = 100967.46 pascals
 Done!
-nsh>
-```
-
-# Rust Embedded HAL for NuttX
-
-The Rust Embedded HAL for NuttX has been published at crates.io...
-
-https://crates.io/crates/nuttx-embedded-hal
-
-To use it in your project, add this to your [Cargo.toml](rust/Cargo.toml):
-
-```text
-# External Rust libraries used by this module.  See crates.io.
-[dependencies]
-nuttx-embedded-hal = "1.0.1"  # Rust Embedded HAL for NuttX: https://crates.io/crates/nuttx-embedded-hal
 ```
