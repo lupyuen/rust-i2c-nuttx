@@ -127,7 +127,7 @@ if [ "$SKIP_FLASH" == '1' ]; then
     echo "Skipping flash"
 else
     pushd $BLFLASH_PATH
-    cargo run flash $APP_NAME.bin \
+    blflash flash $APP_NAME.bin \
         --port /dev/tty.usbserial-14* \
         --initial-baud-rate 230400 \
         --baud-rate 230400

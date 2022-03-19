@@ -2,7 +2,7 @@
 
 //  Import Libraries
 use nuttx_embedded_hal::{  //  NuttX Embedded HAL
-    println,
+    println,               //  Print a formatted message
 };
 
 /// Read Temperature, Pressure and Humidity from BME280 Sensor over I2C
@@ -22,7 +22,7 @@ pub fn read_bme280() {
         nuttx_embedded_hal::Delay  //  Delay Interface
     );
 
-    //  Init the BME280 Senor
+    //  Init the BME280 Sensor
     bme280.init()
         .expect("init failed");
 
