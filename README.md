@@ -2,9 +2,11 @@
 
 (Tested on Pine64 PineCone BL602)
 
-[__Follow the updates on Twitter__](https://twitter.com/MisterTechBlog/status/1502823263121989634)
+Read the articles...
 
-Will Rust talk I2C on Apache NuttX RTOS and BL602? Let's find out!
+-   ["Rust talks I2C on Apache NuttX RTOS"](https://lupyuen.github.io/articles/rusti2c)
+
+-   ["Rust on Apache NuttX OS"](https://lupyuen.github.io/articles/rust2)
 
 This repo depends on...
 
