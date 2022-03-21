@@ -42,7 +42,7 @@ pub fn test_hal_read() {
     //  Read one I2C Register, starting at Device ID
     i2c.write_read(
         BME280_ADDR as u8,  //  I2C Address
-        &[BME280_REG_ID],   //  Register ID (0x60)
+        &[BME280_REG_ID],   //  Register ID (0xD0)
         &mut buf            //  Buffer to be received
     ).expect("read register failed");
 
@@ -127,7 +127,7 @@ pub fn test_i2c() {
 
     //  Read one I2C Register, starting at Device ID
     let mut start = [BME280_REG_ID ; 1];
-    let mut buf   = [0u8 ; 1];
+    let mut buf   = [0 ; 1];
 
     //  Compose I2C Transfer
     let msg = [
@@ -167,7 +167,7 @@ pub fn test_i2c() {
     //  Execute I2C Transfer
     let ret = unsafe { 
         ioctl(
-            i2c,          //  I2C Port
+            i2c,              //  I2C Port
             I2CIOC_TRANSFER,  //  I2C Transfer
             &xfer             //  I2C Messages for the transfer
         )
