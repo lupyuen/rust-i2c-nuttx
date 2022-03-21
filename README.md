@@ -18,8 +18,9 @@ To add this repo to your NuttX project...
 
 ```bash
 ## TODO: Change this to the path of our "incubator-nuttx-apps" folder
-cd nuttx/apps/examples
+pushd nuttx/apps/examples
 git submodule add https://github.com/lupyuen/rust-i2c-nuttx rust_i2c
+popd
 ```
 
 Then update the NuttX Build Config...
